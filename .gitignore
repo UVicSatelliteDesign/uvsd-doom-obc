@@ -59,6 +59,7 @@ Drivers/
 EWARM/
 FATFS/
 .mxproject
+*.ld
 
 # Miscellaneous
 .DS_Store
