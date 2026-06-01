@@ -1,0 +1,81 @@
+# =============================================================================
+# .github/workflows/ci.yml
+# UVSD DOOM OBC — Continuous Integration
+# =============================================================================
+#
+# Triggers
+# --------
+#   • Every pull request targeting main or develop
+#   • Every push to main or develop (keeps the badge green on merges)
+#
+# Jobs
+# ----
+#   unit-tests   — builds and runs the host-based Unity test suite
+#   lint         — runs cppcheck static analysis on Core/Src and Core/Inc
+#
+# =============================================================================
+
+name: CI
+
+on:
+  pull_request:
+    branches: [ main, develop ]
+  push:
+    branches: [ main, develop ]
+
+jobs:
+
+  # ── Host-based unit tests ──────────────────────────────────────────────────
+  unit-tests:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install build tools
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends gcc make
+
+      - name: Build and run unit tests
+        working-directory: tests
+        run: make all
+
+      # Upload the build artefacts on failure so you can inspect them
+      - name: Upload test artefacts on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-build-failure
+          path: tests/build/
+          retention-days: 7
+
+  # ── Static analysis ────────────────────────────────────────────────────────
+  lint:
+    name: Static Analysis (cppcheck)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install cppcheck
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends cppcheck
+
+      # Only analyse hand-written code in Core/; generated Drivers/Middlewares
+      # are excluded because they're not committed (see .gitignore).
+      - name: Run cppcheck
+        run: |
+          cppcheck \
+            --enable=warning,style,performance,portability \
+            --error-exitcode=1 \
+            --inline-suppr \
+            --std=c11 \
+            --suppress=missingIncludeSystem \
+            --suppress=missingInclude \
+            -I Core/Inc \
+            Core/Src/ Core/Inc/
