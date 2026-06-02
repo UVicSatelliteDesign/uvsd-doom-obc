@@ -64,3 +64,6 @@ FATFS/
 
 # Miscellaneous
 .DS_Store
+
+# Test files
+tests/build/

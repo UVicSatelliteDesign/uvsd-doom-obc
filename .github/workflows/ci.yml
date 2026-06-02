@@ -77,5 +77,6 @@ jobs:
             --std=c11 \
             --suppress=missingIncludeSystem \
             --suppress=missingInclude \
+            --suppress=toomanyconfigs \
             -I Core/Inc \
             Core/Src/ Core/Inc/
