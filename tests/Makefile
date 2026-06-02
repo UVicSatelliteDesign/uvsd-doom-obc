@@ -52,8 +52,11 @@ UNITY_SRC := unity/unity.c
 # call hardware and will not compile cleanly on the host.
 #
 # Example (uncomment when you have a module to test):
-#   SRC_FILES := ../Core/Src/data_logger.c \
-#                ../Core/Src/telemetry.c
+#   SRC_FILES := ../Core/Src/comms_router.c \
+#                ../Core/Src/telemetry.c    \
+#                ../Core/Src/compression.c  \
+#                ../Core/Src/boot_sequence.c \
+#                ../Core/Src/logger.c
 #
 SRC_FILES :=
 
@@ -62,8 +65,13 @@ SRC_FILES :=
 # Add every tests/unit/test_*.c file here.
 #
 TESTS := \
-    unit/test_example.c
-
+    unit/test_example.c        \
+    unit/test_comms_router.c   \
+    unit/test_boot_sequence.c  \
+    unit/test_compression.c    \
+    unit/test_telemetry.c      \
+    unit/test_logger.c
+	
 # ── Build directory ───────────────────────────────────────────────────────────
 
 BUILD_DIR := build
