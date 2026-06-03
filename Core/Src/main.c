@@ -260,7 +260,6 @@ void MPU_Config(void)
   * @param  htim : TIM handle
   * @retval None
   */
-// cppcheck-suppress constParameterPointer
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
   /* USER CODE BEGIN Callback 0 */
