@@ -3,34 +3,39 @@
  * @brief Unit tests for OBC Requirement 1:
  *        "Control flow of communication between TTC and all other subsystems."
  *
- * Tests the routing layer that sits between the TTC (Telemetry, Tracking &
- * Command) radio and the other subsystems (payload, ADCS, EPS, etc.).
+ * The OBC receives commands from the TTC radio and dispatches them to the
+ * appropriate subsystem. These tests verify that incoming commands are parsed
+ * correctly and forwarded to the right destination.
  *
- * TODO: #include "comms_router.h" once the module is written.
- *       Until then these tests act as a specification — they define the
- *       interface and expected behaviour before the implementation exists.
- *       Add RUN_TEST() calls and remove the TEST_IGNORE() stubs as each
- *       function is implemented.
+ * OPEN QUESTION: Confirm with the electrical team whether subsystems will ever
+ * send unprompted messages to the OBC, or whether all communication is
+ * initiated by a command received from the radio.
+ *
+ * NOTE: The placeholder types below (SubsystemID_t, CommandStatus_t) are
+ * defined here as a sketch of the intended interface. They do nothing until
+ * command_dispatcher.c and its header exist. Move them to
+ * command_dispatcher.h when that file is written.
+ *
+ * TODO: #include "command_dispatcher.h" once the module is written.
  */
 
 #include "../unity/unity.h"
 
-/* ── Placeholder types (move to comms_router.h when that file exists) ─────── */
+/* ── Placeholder types ───────────────────────────────────────────────────── */
 
 typedef enum {
-    SUBSYSTEM_TTC     = 0,
-    SUBSYSTEM_PAYLOAD = 1,
-    SUBSYSTEM_ADCS    = 2,
-    SUBSYSTEM_EPS     = 3,
+    SUBSYSTEM_PAYLOAD = 0,
+    SUBSYSTEM_ADCS    = 1,
+    SUBSYSTEM_EPS     = 2,
     SUBSYSTEM_COUNT
 } SubsystemID_t;
 
 typedef enum {
-    ROUTE_OK            = 0,
-    ROUTE_ERR_NULL      = -1,
-    ROUTE_ERR_SUBSYSTEM = -2,
-    ROUTE_ERR_LEN       = -3
-} RouteStatus_t;
+    CMD_OK               =  0,
+    CMD_ERR_NULL         = -1,
+    CMD_ERR_UNKNOWN      = -2,
+    CMD_ERR_INVALID_LEN  = -3
+} CommandStatus_t;
 
 /* ── Fixture ─────────────────────────────────────────────────────────────── */
 
@@ -39,50 +44,47 @@ void tearDown(void) {}
 
 /* ── Tests ───────────────────────────────────────────────────────────────── */
 
-void test_route_rejects_null_payload(void)
+void test_dispatch_rejects_null_command(void)
 {
-    /* Passing NULL data to the router must return an error, never crash. */
-    TEST_IGNORE_MESSAGE("TODO: implement when comms_router.c exists");
+    /* Passing NULL to the dispatcher must return an error, never crash. */
+    TEST_IGNORE_MESSAGE("TODO: implement when command_dispatcher.c exists");
 }
 
-void test_route_rejects_zero_length_message(void)
+void test_dispatch_rejects_zero_length_command(void)
 {
-    /* A zero-byte message is meaningless and should be rejected. */
-    TEST_IGNORE_MESSAGE("TODO: implement when comms_router.c exists");
+    /* A zero-length command buffer is invalid and must be rejected. */
+    TEST_IGNORE_MESSAGE("TODO: implement when command_dispatcher.c exists");
 }
 
-void test_route_rejects_oversized_message(void)
+void test_dispatch_rejects_unknown_command_id(void)
 {
-    /* Messages exceeding the maximum frame size must be rejected. */
-    TEST_IGNORE_MESSAGE("TODO: implement when comms_router.c exists");
+    /* A command ID that does not map to any known subsystem must be rejected. */
+    TEST_IGNORE_MESSAGE("TODO: implement when command_dispatcher.c exists");
 }
 
-void test_route_rejects_invalid_subsystem_id(void)
+void test_payload_command_dispatched_to_payload(void)
 {
-    /* A destination ID >= SUBSYSTEM_COUNT is invalid. */
-    TEST_IGNORE_MESSAGE("TODO: implement when comms_router.c exists");
+    /* A command addressed to the payload subsystem must be forwarded there. */
+    TEST_IGNORE_MESSAGE("TODO: implement when command_dispatcher.c exists");
 }
 
-void test_route_to_payload_succeeds_with_valid_message(void)
+void test_adcs_command_dispatched_to_adcs(void)
 {
-    /* A well-formed message addressed to PAYLOAD must return ROUTE_OK. */
-    TEST_IGNORE_MESSAGE("TODO: implement when comms_router.c exists");
+    /* A command addressed to ADCS must be forwarded to ADCS. */
+    TEST_IGNORE_MESSAGE("TODO: implement when command_dispatcher.c exists");
 }
 
-void test_route_to_adcs_succeeds_with_valid_message(void)
+void test_eps_command_dispatched_to_eps(void)
 {
-    TEST_IGNORE_MESSAGE("TODO: implement when comms_router.c exists");
+    /* A command addressed to EPS must be forwarded to EPS. */
+    TEST_IGNORE_MESSAGE("TODO: implement when command_dispatcher.c exists");
 }
 
-void test_route_to_eps_succeeds_with_valid_message(void)
+void test_obc_command_handled_locally(void)
 {
-    TEST_IGNORE_MESSAGE("TODO: implement when comms_router.c exists");
-}
-
-void test_ttc_command_is_not_forwarded_back_to_ttc(void)
-{
-    /* Commands arriving from TTC must never be echoed back to TTC. */
-    TEST_IGNORE_MESSAGE("TODO: implement when comms_router.c exists");
+    /* A command targeting the OBC itself must be handled internally,
+     * not forwarded to any subsystem. */
+    TEST_IGNORE_MESSAGE("TODO: implement when command_dispatcher.c exists");
 }
 
 /* ── Runner ──────────────────────────────────────────────────────────────── */
@@ -91,14 +93,13 @@ int main(void)
 {
     UNITY_BEGIN();
 
-    RUN_TEST(test_route_rejects_null_payload);
-    RUN_TEST(test_route_rejects_zero_length_message);
-    RUN_TEST(test_route_rejects_oversized_message);
-    RUN_TEST(test_route_rejects_invalid_subsystem_id);
-    RUN_TEST(test_route_to_payload_succeeds_with_valid_message);
-    RUN_TEST(test_route_to_adcs_succeeds_with_valid_message);
-    RUN_TEST(test_route_to_eps_succeeds_with_valid_message);
-    RUN_TEST(test_ttc_command_is_not_forwarded_back_to_ttc);
+    RUN_TEST(test_dispatch_rejects_null_command);
+    RUN_TEST(test_dispatch_rejects_zero_length_command);
+    RUN_TEST(test_dispatch_rejects_unknown_command_id);
+    RUN_TEST(test_payload_command_dispatched_to_payload);
+    RUN_TEST(test_adcs_command_dispatched_to_adcs);
+    RUN_TEST(test_eps_command_dispatched_to_eps);
+    RUN_TEST(test_obc_command_handled_locally);
 
     return UNITY_END();
 }
