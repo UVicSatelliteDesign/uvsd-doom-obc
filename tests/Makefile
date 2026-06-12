@@ -55,7 +55,8 @@ UNITY_SRC := unity/unity.c
 #   SRC_FILES := ../Core/Src/command_dispatcher.c \
 #                ../Core/Src/telemetry.c           \
 #                ../Core/Src/boot_sequence.c        \
-#                ../Core/Src/logger.c
+#                ../Core/Src/logger.c               \
+#                ../Core/Src/burnwire.c
 #
 SRC_FILES :=
 
@@ -68,7 +69,8 @@ TESTS := \
     unit/test_comms_router.c      \
     unit/test_boot_sequence.c     \
     unit/test_telemetry.c         \
-    unit/test_logger.c
+    unit/test_logger.c            \
+    unit/test_burnwire.c
 
 # ── Build directory ───────────────────────────────────────────────────────────
 
