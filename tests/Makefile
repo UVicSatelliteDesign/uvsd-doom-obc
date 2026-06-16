@@ -52,7 +52,7 @@ UNITY_SRC := unity/unity.c
 # call hardware and will not compile cleanly on the host.
 #
 # Example (uncomment when you have a module to test):
-#   SRC_FILES := ../Core/Src/command_dispatcher.c \
+#   SRC_FILES := ../Core/Src/command.c \
 #                ../Core/Src/telemetry.c           \
 #                ../Core/Src/boot_sequence.c        \
 #                ../Core/Src/logger.c               \
@@ -66,7 +66,7 @@ SRC_FILES :=
 #
 TESTS := \
     unit/test_example.c           \
-    unit/test_comms_router.c      \
+    unit/test_command.c      \
     unit/test_boot_sequence.c     \
     unit/test_telemetry.c         \
     unit/test_logger.c            \

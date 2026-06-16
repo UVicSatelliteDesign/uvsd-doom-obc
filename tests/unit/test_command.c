@@ -1,5 +1,5 @@
 /**
- * @file  test_comms_router.c
+ * @file  test_command.c
  * @brief Unit tests for OBC Requirement 1:
  *        "Control flow of communication between TTC and all other subsystems."
  *
@@ -13,10 +13,10 @@
  *
  * NOTE: The placeholder types below (SubsystemID_t, CommandStatus_t) are
  * defined here as a sketch of the intended interface. They do nothing until
- * command_dispatcher.c and its header exist. Move them to
- * command_dispatcher.h when that file is written.
+ * command.c and its header exist. Move them to
+ * command.h when that file is written.
  *
- * TODO: #include "command_dispatcher.h" once the module is written.
+ * TODO: #include "command.h" once the module is written.
  */
 
 #include "../unity/unity.h"
@@ -70,7 +70,7 @@ void test_payload_command_dispatched_to_payload(void)
 
 void test_adcs_command_dispatched_to_adcs(void)
 {
-    /* A command addressed to ADCS must be forwarded to ADCS. */
+    /* May be removed later: A command addressed to ADCS must be forwarded to ADCS. */
     TEST_IGNORE_MESSAGE("TODO: implement when command_dispatcher.c exists");
 }
 
