@@ -64,3 +64,4 @@ FATFS/
 
 # Miscellaneous
 .DS_Store
+.osx.project
