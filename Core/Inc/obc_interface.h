@@ -3,6 +3,13 @@
 
 #include "fatfs.h"
 
+// Types of logged information for telemetry. [Also exists "GENERAL" as default.]
+enum Type {
+	TEL_DATA,
+	TEL_WARNING,
+	TEL_ERROR
+};
+
 /*
  * Brief: Mounts the SD card.
  * Return: Response state.
@@ -30,11 +37,13 @@ FRESULT SD_set_up_directories();
 /*
  * Brief: Writes given data onto a mounted SD card.
  * Parameter data: Pointer to the data.
- * Parameter data_length: The number of characters in data.
+ * Parameter data_size: The number of characters in data.
  * Parameter type_of_data: The type of data to be written. (UNSURE WHAT TYPES ARE USED.)
  * Return: Response state.
+ * Note: For calculating data_size of a string,
+ * 		 use strlen() as it doesn't count the null terminator!
  */
-FRESULT SD_write_data();
+FRESULT SD_write_data(const uint8_t* data, uint8_t data_size, enum Type type_of_data);
 
 /*
  * Brief: Completely wipes the formating and data on the SD card.
