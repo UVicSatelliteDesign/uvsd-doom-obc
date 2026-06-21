@@ -16,10 +16,16 @@ FRESULT SD_mount();
 FRESULT SD_dismount();
 
 /*
- * Brief: Formats the SD card (PROVIDE MORE DETAIL.)
+ * Brief: Formats the SD card to a FAT type AND creates the directory structure.
  * Return: Response state.
  */
 FRESULT SD_format();
+
+/*
+ * Brief: Creates directories within a configured FAT file system.
+ * Return: Response state.
+ */
+FRESULT SD_set_up_directories();
 
 /*
  * Brief: Writes given data onto a mounted SD card.
