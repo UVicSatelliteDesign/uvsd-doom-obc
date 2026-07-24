@@ -7,7 +7,7 @@ This README will be updated as functions are tested on hardware.
 | SD_dismount | Not tested. |
 | SD_format | Not tested. |
 | SD_set_up_directories | Not tested. |
-| SD_write_data | Not tested. |
-| SD_clean | Not tested. |
+| SD_write_data_to_log | Not tested. |
+| SD_verify_state | Not tested. |
 
-Last Update: 23 / 06 / 2026
+Last Update: 24 / 07 / 2026
