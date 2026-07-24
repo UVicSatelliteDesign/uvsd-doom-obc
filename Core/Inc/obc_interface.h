@@ -3,8 +3,9 @@
 
 #include "fatfs.h"
 
-// Types of logged information for telemetry. [Also exists "GENERAL" as default.]
+// Types of logged information for telemetry.
 enum Type {
+	TEL_GENERAL,
 	TEL_DATA,
 	TEL_WARNING,
 	TEL_ERROR
@@ -23,7 +24,8 @@ FRESULT SD_mount();
 FRESULT SD_dismount();
 
 /*
- * Brief: Formats the SD card to a FAT type AND creates the directory structure.
+ * Brief: Formats the SD card (losing data) into a FAT type chosen by FatFS.
+ * 		  Not needed for set up of SD card if it is already of the right type.
  * Return: Response state.
  */
 FRESULT SD_format();
@@ -37,20 +39,15 @@ FRESULT SD_set_up_directories();
 /*
  * Brief: Writes given data onto a mounted SD card.
  * Parameter data: Pointer to the data.
- * Parameter data_size: The number of characters in data.
  * Parameter type_of_data: The type of data to be written. (UNSURE WHAT TYPES ARE USED.)
  * Return: Response state.
- * Note: For calculating data_size of a string,
- * 		 use strlen() as it doesn't count the null terminator!
  */
 FRESULT SD_write_data(const uint8_t* data, uint8_t data_size, enum Type type_of_data);
 
 /*
- * Brief: Completely wipes the formating and data on the SD card.
- * Return: Response state.
- * Note: This function does NOT overwrite all memory.
- * 			It simply makes the data inaccessible, and removes the directory structure.
+ * Brief: Checks that everything is set up correctly and can set SD_functional to true.
+ * Return: The new boolean of SD_functional.
  */
-FRESULT SD_clean();
+bool SD_verify_state();
 
 #endif /* INC_OBC_INTERFACE_H_ */

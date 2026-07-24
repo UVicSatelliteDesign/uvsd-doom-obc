@@ -2,7 +2,7 @@
 #include <string.h>
 #include "obc_interface.h"
 
-bool SD_functional = false;
+bool SD_functional = false;			// Use SD_verify_state() to change this.
 uint8_t SD_read_buffer[_MAX_SS];	// Unsure whether it is needed.
 uint8_t SD_write_buffer[_MAX_SS];
 UINT bytes_written;					// Needed for FatFS to keep track of bytes written to a file.
@@ -11,24 +11,13 @@ FRESULT SD_mount(){
 	// Determine the practical difference of setting parameter to 1.
 	FRESULT mount_result = f_mount(&SDFatFS, SDPath, 1);
 
-	if (mount_result != FR_OK){
-			SD_functional = false;
-
-			if (mount_result == FR_NOT_READY){
-					/*
-					 * File system object registered successfully but volume not ready for work.
-					 * The volume mount process will be attempted on
-					 * next file / directory function automatically.
-					 */
-				}
-		}
-
-	/*
-	 * Additionally, we could possibly receive FR_NO_FILESYSTEM.
-	 * This would indicate that either SD_format was not run first or it had failed.
-	 * There could be a possibility for calling SD_format within this function,
-	 * but that would put data stored on the SD at risk.
-	 */
+	if (mount_result == FR_NOT_READY){
+		/*
+		 * File system object registered successfully but volume not ready for work.
+		 * The volume mount process will be attempted on
+		 * next file / directory function automatically.
+		*/
+	}
 
 	return (mount_result);
 }
@@ -38,7 +27,14 @@ FRESULT SD_dismount(){
 	return (f_mount(NULL, SDPath, 0));
 }
 
-FRESULT SD_format(){
+/*
+ * Be careful with this function, as it clears out everything on the SD card.
+ * The use of this function is not necessary for the SD card set up, given that it is
+ * 		in the right format.
+ * 	Rerunning SD_set_up_directories & SD_verify_state() after will be necessary for
+ * 		further work.
+ */
+FRESULT SD_reset(){
 	FRESULT format_result = f_mkfs(SDPath, FM_ANY, 0, SD_write_buffer, sizeof(SD_write_buffer));
 
 	if (format_result != FR_OK){
@@ -65,8 +61,7 @@ FRESULT SD_set_up_directories(){
 	return (set_up_result);
 }
 
-// For calculating data_size of a string, use strlen() as it doesn't count the null terminator!
-FRESULT SD_write_data(const uint8_t* data, uint8_t data_size, enum Type type_of_data){
+FRESULT SD_write_data_to_log(const char* data, enum Type type_of_data){
 	FRESULT result = f_open(&SDFile, "Home/Telemetry/telemetry.txt", FA_OPEN_APPEND | FA_WRITE);
 	if (result != FR_OK){
 		SD_functional = false;
@@ -97,6 +92,7 @@ FRESULT SD_write_data(const uint8_t* data, uint8_t data_size, enum Type type_of_
 		return (result);
 	}
 
+	uint8_t data_size = strlen(data);
 	result = f_write(&SDFile, data, data_size, &bytes_written);
 	if (result != FR_OK || bytes_written == 0){
 		SD_functional = false;
@@ -115,7 +111,32 @@ FRESULT SD_write_data(const uint8_t* data, uint8_t data_size, enum Type type_of_
 	return (result);
 }
 
-FRESULT SD_clean(){
-	FRESULT SD_clean_result = f_mkfs(SDPath, FM_ANY, 0, SD_write_buffer, sizeof(SD_write_buffer));
-	return (SD_clean_result);
+bool SD_verify_state(){
+	// First, check that the SD is mounted.
+	if (SDFatFS.fs_type == 0){
+		return (false);
+	}
+
+	// Second, check reading by checking required directories.
+	DIR directory;
+	FRESULT result = f_opendir(&directory, "Home/Telemetry");
+	f_closedir(&directory);
+
+	if (result != FR_OK){
+		return (false);
+	}
+
+	// Third, write into the main log file that the SD was verified.
+	char log_entry[] = "SD card status verification.";
+	result = SD_write_data_to_log(log_entry, TEL_GENERAL);
+
+	if (result != FR_OK){
+		return (false);
+	}
+
+	SD_functional = true;
+	return (true);
 }
+
+
+
