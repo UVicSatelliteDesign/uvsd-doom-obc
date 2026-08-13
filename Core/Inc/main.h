@@ -55,6 +55,7 @@ void Error_Handler(void);
 /* USER CODE BEGIN EFP */
 void handle_telemetry(void *vpParameters);
 void handle_command(void *vpParameters);
+void burnwire_parachute(void *vpParameters);
 
 /* USER CODE END EFP */
 

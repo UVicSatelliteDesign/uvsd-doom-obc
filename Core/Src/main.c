@@ -137,11 +137,17 @@ int main(void)
           tskIDLE_PRIORITY,
           NULL);
   xTaskCreate(handle_command,
-            "Handle Command",
-            configMINIMAL_STACK_SIZE,
-            NULL,
-            tskIDLE_PRIORITY,
-            NULL);
+          "Handle Command",
+          configMINIMAL_STACK_SIZE,
+          NULL,
+          tskIDLE_PRIORITY,
+          NULL);
+  xTaskCreate(burnwire_parachute,
+          "Burnwire and Parachute",
+          configMINIMAL_STACK_SIZE,
+          NULL,
+          tskIDLE_PRIORITY,
+          NULL);
 
   /* USER CODE END RTOS_THREADS */
 
