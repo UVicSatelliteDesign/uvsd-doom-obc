@@ -130,12 +130,14 @@ int main(void)
   defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
+  TaskHandle_t telemetryTaskHandle = NULL;
+
   xTaskCreate(handle_telemetry,
           "Handle Telemetry",
           configMINIMAL_STACK_SIZE,
           NULL,
           tskIDLE_PRIORITY,
-          NULL);
+          &telemetryTaskHandle);
   xTaskCreate(handle_command,
           "Handle Command",
           configMINIMAL_STACK_SIZE,
