@@ -60,6 +60,8 @@ void burnwire_parachute(void *vpParameters);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
+#define PARA_BRN_1_Pin GPIO_PIN_11
+#define PARA_BRN_1_GPIO_Port GPIOA
 
 /* USER CODE BEGIN Private defines */
 
