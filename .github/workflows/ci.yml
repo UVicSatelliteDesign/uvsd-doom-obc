@@ -5,13 +5,15 @@
 #
 # Triggers
 # --------
-#   • Every pull request targeting main or develop
-#   • Every push to main or develop (keeps the badge green on merges)
+#   • Every pull request targeting main
+#   • Every push to main (keeps the badge green on merges)
+#   • Manual run (Actions → CI → Run workflow)
 #
 # Jobs
 # ----
 #   unit-tests   — builds and runs the host-based Unity test suite
 #   lint         — runs cppcheck static analysis on Core/Src and Core/Inc
+#   coverage     — reruns the unit tests with gcov and publishes an lcov report
 #   firmware     — cross-compiles the real firmware with arm-none-eabi-gcc
 #
 # =============================================================================
@@ -20,9 +22,10 @@ name: CI
 
 on:
   pull_request:
-    branches: [ main, develop ]
+    branches: [ main ]
   push:
-    branches: [ main, develop ]
+    branches: [ main ]
+  workflow_dispatch:
 
 jobs:
 
@@ -52,6 +55,43 @@ jobs:
           name: test-build-failure
           path: tests/build/
           retention-days: 7
+
+  # ── Coverage ───────────────────────────────────────────────────────────────
+  # Report only: it never fails the build on a coverage percentage.
+  coverage:
+    name: Coverage
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install build tools
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends gcc make lcov
+
+      - name: Run unit tests with coverage
+        working-directory: tests
+        run: make coverage | tee coverage.txt
+
+      - name: Add coverage table to the job summary
+        if: always()
+        working-directory: tests
+        run: |
+          {
+            echo '### Coverage of Core/Src'
+            echo '```'
+            sed -n '/Filename/,$p' coverage.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: tests/build/coverage_html/
+          retention-days: 14
 
   # ── Static analysis ────────────────────────────────────────────────────────
   lint:
