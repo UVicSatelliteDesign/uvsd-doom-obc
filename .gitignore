@@ -70,3 +70,8 @@ FATFS/
 !ci/firmware/*.ld
 ci/firmware/build/
 hil-logs/
+
+# Unit test build output and coverage data
+tests/build/
+*.gcno
+*.gcda
