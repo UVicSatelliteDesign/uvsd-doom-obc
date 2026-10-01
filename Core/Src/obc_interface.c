@@ -24,6 +24,12 @@ void set_burnwire_pin() {
 	return;
 }
 
+void reset_burnwire_pin() {
+	// Set burnwire pin high to enable 7V7 output to burnwire
+	HAL_GPIO_WritePin(PARA_BRN_1_GPIO_Port, PARA_BRN_1_Pin, GPIO_PIN_RESET);
+	return;
+}
+
 // Should start "long timer" for burnwire pin set duration
 void start_long_timer() {
 	// TODO: Use BURNWIRE_LONG_TIME

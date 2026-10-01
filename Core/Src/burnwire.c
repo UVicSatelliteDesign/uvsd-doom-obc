@@ -35,7 +35,7 @@ void burnwire_parachute(void *vpParameters) {
 	} while (!(received_notification & INFO & LONG_TIMER) || !(received_notification & INFO & SHORT_TIMER));
 
 	// One of the timers has expired; turn off the burnwire pin
-	HAL_GPIO_WritePin(PARA_BRN_1_GPIO_Port, PARA_BRN_1_Pin, GPIO_PIN_RESET);
+	reset_burnwire_pin();
 
 	// End task
 	vTaskDelete(NULL);
