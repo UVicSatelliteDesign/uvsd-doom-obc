@@ -5,6 +5,7 @@
 
 #include "main.h"
 #include "obc_interface.h"
+#include "telemetry_sensors.h"
 
 #define BURNWIRE_ALTITUDE_LIMIT 23100 // Altitude in meters at which to trigger burnwire
 #define BURNWIRE_TIME_LIMIT (55*60) // Time in seconds at which to trigger burnwire
@@ -15,7 +16,7 @@ void burnwire_parachute(void *vpParameters) {
 	uint32_t received_notification = 0;
 
 	do {
-		altitude = read_altitude();
+		altitude = read_altimeter();
 		time = get_flight_time();
 		received_notification = ulTaskNotifyTake(pdFALSE, 0);
 		vTaskDelay(1000/portTICK_PERIOD_MS);

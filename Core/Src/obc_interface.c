@@ -8,11 +8,6 @@
 #define BURNWIRE_LONG_TIME 120 // TODO: Set to actual time in seconds
 #define BURNWIRE_SHORT_TIME 60 // TODO: Set to actual time in seconds
 
-// Should return current altitude in meters
-float read_altitude() {
-	return 0.0;
-}
-
 // Should return time since launch in seconds
 uint32_t get_flight_time() {
 	return 0;
