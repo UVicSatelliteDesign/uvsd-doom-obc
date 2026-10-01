@@ -68,8 +68,6 @@ void burnwire_parachute(void *vpParameters);
 
 /* USER CODE BEGIN Private defines */
 
-extern TaskHandle_t telemetryTaskHandle; // handle for the telemetry task
-
 /////////////////////////////////
 // FreeRTOS task message masks //
 /////////////////////////////////

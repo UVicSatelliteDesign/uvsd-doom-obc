@@ -23,7 +23,7 @@ void burnwire_parachute(void *vpParameters) {
 	} while (altitude < BURNWIRE_ALTITUDE_LIMIT || time < BURNWIRE_TIME_LIMIT || !(received_notification & REQUEST & BURNWIRE));
 
 	// One of the conditions for triggering burnwire has been met
-	xTaskNotify(telemetryTaskHandle, INFO & BURNWIRE, eSetValueWithOverwrite); // TODO: which task if any should this notify?
+	//xTaskNotify(xTaskGetHandle("TASK_NAME"), INFO & BURNWIRE, eSetBits); // TODO: which task if any should this notify?
 	set_burnwire_pin();
 	start_long_timer();
 
