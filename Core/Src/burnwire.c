@@ -18,6 +18,7 @@ void burnwire_parachute(void *vpParameters) {
 		altitude = read_altitude();
 		time = get_flight_time();
 		received_notification = ulTaskNotifyTake(pdFALSE, 0);
+		vTaskDelay(1000/portTICK_PERIOD_MS);
 	} while (altitude < BURNWIRE_ALTITUDE_LIMIT || time < BURNWIRE_TIME_LIMIT || !(received_notification & REQUEST & BURNWIRE));
 
 	// One of the conditions for triggering burnwire has been met
@@ -30,6 +31,7 @@ void burnwire_parachute(void *vpParameters) {
 		if (received_notification & INFO & DEPLOYMENT_SWITCHES) {
 			start_short_timer();
 		}
+		vTaskDelay(1000/portTICK_PERIOD_MS);
 	} while (!(received_notification & INFO & LONG_TIMER) || !(received_notification & INFO & SHORT_TIMER));
 
 	// One of the timers has expired; turn off the burnwire pin
