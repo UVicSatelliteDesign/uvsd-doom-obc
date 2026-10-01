@@ -12,6 +12,7 @@
 # ----
 #   unit-tests   — builds and runs the host-based Unity test suite
 #   lint         — runs cppcheck static analysis on Core/Src and Core/Inc
+#   firmware     — cross-compiles the real firmware with arm-none-eabi-gcc
 #
 # =============================================================================
 
@@ -80,3 +81,45 @@ jobs:
             --suppress=toomanyconfigs \
             -I Core/Inc \
             Core/Src/ Core/Inc/
+
+  # ── Firmware build ─────────────────────────────────────────────────────────
+  # CubeMX output isn't committed, so the ST HAL/CMSIS/FreeRTOS/FatFs sources
+  # are fetched at the version pinned in the .ioc (see ci/firmware/).
+  firmware:
+    name: Firmware Build (arm-none-eabi-gcc)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install ARM toolchain
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends \
+            gcc-arm-none-eabi binutils-arm-none-eabi libnewlib-arm-none-eabi make
+
+      - name: Cache ST sources
+        uses: actions/cache@v4
+        with:
+          path: |
+            Drivers
+            Middlewares
+          key: cube-h7-${{ hashFiles('ci/firmware/fetch_cube_deps.sh') }}
+
+      - name: Fetch CubeMX dependencies
+        run: ci/firmware/fetch_cube_deps.sh
+
+      - name: Build firmware
+        run: make -C ci/firmware -j"$(nproc)"
+
+      - name: Upload firmware
+        uses: actions/upload-artifact@v4
+        with:
+          name: uvsd-doom-obc-firmware
+          path: |
+            ci/firmware/build/uvsd-doom-obc.elf
+            ci/firmware/build/uvsd-doom-obc.hex
+            ci/firmware/build/uvsd-doom-obc.bin
+            ci/firmware/build/uvsd-doom-obc.map
+          retention-days: 14
