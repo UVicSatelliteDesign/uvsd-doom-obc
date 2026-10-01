@@ -64,3 +64,9 @@ FATFS/
 
 # Miscellaneous
 .DS_Store
+
+# CI stand-ins for generated files (copied into place by ci/firmware/fetch_cube_deps.sh)
+!ci/firmware/FATFS/
+!ci/firmware/*.ld
+ci/firmware/build/
+hil-logs/
