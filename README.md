@@ -1,4 +1,6 @@
 # UVSD DOOM OBC
+[![CI](https://github.com/UVicSatelliteDesign/uvsd-doom-obc/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/UVicSatelliteDesign/uvsd-doom-obc/actions/workflows/ci.yml)
+
 Code for the On-Board Computer on the DOOM project. The OBC runs on a STM32H733VGT6. Currently code for the DOOM Balloon phase.
 
 ### Instructions for generating code
@@ -16,4 +18,5 @@ ci/firmware/fetch_cube_deps.sh   # fills Drivers/, Middlewares/, FATFS/ and the 
 make -C ci/firmware              # → ci/firmware/build/uvsd-doom-obc.{elf,hex,bin}
 ```
 
+Unit tests run on any Linux/macOS machine with `gcc` + `make`: see [tests/README.md](tests/README.md).
 Hardware-in-the-loop tests (Raspberry Pi runner + STM32H733) are described in [docs/hil-setup.md](docs/hil-setup.md).
