@@ -109,6 +109,9 @@ jobs:
 
       # Only analyse hand-written code in Core/; generated Drivers/Middlewares
       # are excluded because they're not committed (see .gitignore).
+      # main.c is CubeMX-generated: its HAL callbacks override __weak functions
+      # whose signatures are fixed (non-const handle pointers), and inline
+      # suppressions outside USER CODE blocks are wiped on regeneration.
       - name: Run cppcheck
         run: |
           cppcheck \
@@ -119,6 +122,7 @@ jobs:
             --suppress=missingIncludeSystem \
             --suppress=missingInclude \
             --suppress=toomanyconfigs \
+            --suppress=constParameterPointer:Core/Src/main.c \
             -I Core/Inc \
             Core/Src/ Core/Inc/
 
