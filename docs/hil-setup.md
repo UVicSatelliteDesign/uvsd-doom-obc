@@ -159,5 +159,6 @@ HIL_SERIAL_PORT=/dev/ttyACM0 ci/hil/run_hil.sh ci/firmware/build/uvsd-doom-obc.e
 | `firmware is stuck in HardFault_Handler` | Firmware crashed at boot. Download the `.elf` artifact and debug it in CubeIDE. |
 | `firmware is stuck in Error_Handler` | A HAL init call failed, usually clock or peripheral config in the `.ioc`. |
 | `UART output did not match` | Wrong `HIL_SERIAL_PORT`, baud mismatch (`HIL_BAUD`), or the firmware hasn't printed yet. Raise `HIL_UART_SECS`. |
+| Step fails asking for a newer runner (e.g. `2.327.1`) | The actions run on Node 24, which needs a recent runner. Runners update themselves; if auto-update is off, re-download it from the New self-hosted runner page. |
 | Job stuck in **Queued** | The runner is offline. Check `sudo ./svc.sh status` on the Pi, or set `HIL_ENABLED=false`. |
 | USB drops mid-run, `under-voltage detected` in `dmesg` | Use the official PSU, or a powered USB hub for the ST-Link. |

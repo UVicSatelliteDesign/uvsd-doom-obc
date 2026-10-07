@@ -44,7 +44,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Install ARM toolchain
         run: |
@@ -53,7 +53,7 @@ jobs:
             gcc-arm-none-eabi binutils-arm-none-eabi libnewlib-arm-none-eabi make
 
       - name: Cache ST sources
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: |
             Drivers
@@ -67,7 +67,7 @@ jobs:
         run: make -C ci/firmware -j"$(nproc)"
 
       - name: Upload firmware
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: hil-firmware
           path: ci/firmware/build/uvsd-doom-obc.elf
@@ -81,10 +81,10 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Download firmware
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: hil-firmware
           path: fw
@@ -98,7 +98,7 @@ jobs:
 
       - name: Upload HIL logs
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: hil-logs
           path: hil-logs/
