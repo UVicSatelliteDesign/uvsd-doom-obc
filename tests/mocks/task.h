@@ -22,10 +22,11 @@ typedef enum {
     eSetValueWithoutOverwrite
 } eNotifyAction;
 
-/* Test hooks (static so each test binary gets its own copy). */
-static uint32_t   mock_task_notify_value = 0;
-static uint32_t   mock_task_last_notify  = 0;
-static TickType_t mock_task_tick_count   = 0;
+/* Test hooks, defined once in mocks/task_mock.c so the test file and the
+ * module under test share the same copy. */
+extern uint32_t   mock_task_notify_value;
+extern uint32_t   mock_task_last_notify;
+extern TickType_t mock_task_tick_count;
 
 static inline void vTaskDelay(TickType_t ticks) { mock_task_tick_count += ticks; }
 static inline TickType_t xTaskGetTickCount(void) { return mock_task_tick_count; }
@@ -58,7 +59,7 @@ static inline BaseType_t xTaskNotify(TaskHandle_t t, uint32_t value, eNotifyActi
     return pdPASS;
 }
 
-/* Silence -Wunused-variable in tests that never touch the hooks. */
+/* Call from setUp() so state doesn't leak between tests. */
 static inline void mock_task_reset(void)
 {
     mock_task_notify_value = 0;
