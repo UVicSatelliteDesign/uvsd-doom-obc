@@ -1,0 +1,105 @@
+# =============================================================================
+# .github/workflows/hil.yml
+# UVSD DOOM OBC — Hardware-in-the-loop tests
+# =============================================================================
+#
+# Builds the firmware on a GitHub runner, then flashes it onto a real
+# STM32H733 from the Raspberry Pi self-hosted runner and checks it boots
+# (ci/hil/run_hil.sh). Setup: docs/hil-setup.md.
+#
+# Triggers
+# --------
+#   • Push to main
+#   • Manual run (Actions → HIL → Run workflow)
+#
+# Never on pull_request: the repo is public, and a fork PR must not be able
+# to run code on the Pi.
+#
+# The hardware job only runs when the repo variable HIL_ENABLED is "true"
+# (Settings → Secrets and variables → Actions → Variables), so pushes don't
+# queue forever while the rig is offline.
+# =============================================================================
+
+name: HIL
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# One rig: queue runs instead of fighting over the ST-Link.
+concurrency:
+  group: hil-rig
+  cancel-in-progress: false
+
+jobs:
+
+  build:
+    name: Build firmware
+    runs-on: ubuntu-24.04
+    if: vars.HIL_ENABLED == 'true'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Install ARM toolchain
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends \
+            gcc-arm-none-eabi binutils-arm-none-eabi libnewlib-arm-none-eabi make
+
+      - name: Cache ST sources
+        uses: actions/cache@v6
+        with:
+          path: |
+            Drivers
+            Middlewares
+          key: cube-h7-${{ hashFiles('ci/firmware/fetch_cube_deps.sh') }}
+
+      - name: Fetch CubeMX dependencies
+        run: ci/firmware/fetch_cube_deps.sh
+
+      - name: Build firmware
+        run: make -C ci/firmware -j"$(nproc)"
+
+      - name: Upload firmware
+        uses: actions/upload-artifact@v7
+        with:
+          name: hil-firmware
+          path: ci/firmware/build/uvsd-doom-obc.elf
+          retention-days: 7
+
+  hardware:
+    name: Flash + boot check (Pi + STM32H733)
+    needs: build
+    runs-on: [ self-hosted, linux, obc-hil ]
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Download firmware
+        uses: actions/download-artifact@v8
+        with:
+          name: hil-firmware
+          path: fw
+
+      - name: Run HIL smoke test
+        env:
+          HIL_LOG_DIR: hil-logs
+          HIL_SERIAL_PORT: ${{ vars.HIL_SERIAL_PORT }}
+          HIL_UART_EXPECT: ${{ vars.HIL_UART_EXPECT }}
+        run: ci/hil/run_hil.sh fw/uvsd-doom-obc.elf
+
+      - name: Upload HIL logs
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: hil-logs
+          path: hil-logs/
+          retention-days: 14
