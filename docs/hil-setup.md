@@ -6,7 +6,7 @@ is registered as a self-hosted GitHub Actions runner. This page covers the
 parts, wiring, Pi setup, runner registration, and common failures.
 
 ```
-GitHub ──(push to main / manual run)──▶ ubuntu-latest: build .elf
+GitHub ──(push to main / manual run)──▶ ubuntu-24.04: build .elf
                                               │ artifact
                                               ▼
                                    Raspberry Pi (self-hosted runner)

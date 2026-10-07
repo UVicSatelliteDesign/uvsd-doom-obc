@@ -39,7 +39,7 @@ jobs:
 
   build:
     name: Build firmware
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     if: vars.HIL_ENABLED == 'true'
 
     steps:

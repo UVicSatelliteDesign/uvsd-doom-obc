@@ -32,7 +32,7 @@ jobs:
   # ── Host-based unit tests ──────────────────────────────────────────────────
   unit-tests:
     name: Unit Tests
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
       - name: Checkout repository
@@ -60,7 +60,7 @@ jobs:
   # Report only: it never fails the build on a coverage percentage.
   coverage:
     name: Coverage
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
       - name: Checkout repository
@@ -96,7 +96,7 @@ jobs:
   # ── Static analysis ────────────────────────────────────────────────────────
   lint:
     name: Static Analysis (cppcheck)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
       - name: Checkout repository
@@ -131,7 +131,7 @@ jobs:
   # are fetched at the version pinned in the .ioc (see ci/firmware/).
   firmware:
     name: Firmware Build (arm-none-eabi-gcc)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
       - name: Checkout repository
