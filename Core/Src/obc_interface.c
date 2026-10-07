@@ -20,7 +20,7 @@ void set_burnwire_pin() {
 }
 
 void reset_burnwire_pin() {
-	// Set burnwire pin high to enable 7V7 output to burnwire
+	// Set burnwire pin low to disable 7V7 output to burnwire
 	HAL_GPIO_WritePin(PARA_BRN_1_GPIO_Port, PARA_BRN_1_Pin, GPIO_PIN_RESET);
 	return;
 }
