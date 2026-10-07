@@ -45,6 +45,13 @@ INCLUDES := \
 
 UNITY_SRC := unity/unity.c
 
+# ── Mock sources ──────────────────────────────────────────────────────────────
+#
+# Shared state for header-only mocks (e.g. task.h's notification hooks).
+# Linked into every test binary.
+#
+MOCK_SRC := mocks/task_mock.c
+
 # ── Source files from the real firmware that tests need ──────────────────────
 #
 # Each test binary links only the Core/Src files it exercises, listed as
@@ -91,10 +98,10 @@ all: build run
 
 build: $(TEST_BINS)
 
-# Each test binary links Unity + its own SRC_<test> list + the test file itself.
+# Each test binary links Unity + the mocks + its own SRC_<test> list + the test file itself.
 # Secondary expansion lets the prerequisite list look up SRC_$* per target.
 .SECONDEXPANSION:
-$(BUILD_DIR)/%: unit/%.c $(UNITY_SRC) $$(SRC_$$*)
+$(BUILD_DIR)/%: unit/%.c $(UNITY_SRC) $(MOCK_SRC) $$(SRC_$$*)
 	@mkdir -p $(BUILD_DIR)
 	$(CC) $(CFLAGS) $(INCLUDES) $^ -o $@
 
