@@ -14,8 +14,8 @@
 # ----------------------
 #   1. Create tests/unit/test_<module>.c  (see test_example.c for the pattern)
 #   2. Append it to the TESTS list below
-#   3. If the test exercises a real source file in Core/Src, add it to
-#      the SRC_FILES list below so it gets compiled into that test binary.
+#   3. If the test exercises a real source file in Core/Src, add a
+#      SRC_test_<module> line below so it gets compiled into that test binary.
 #
 # =============================================================================
 
@@ -47,18 +47,19 @@ UNITY_SRC := unity/unity.c
 
 # ── Source files from the real firmware that tests need ──────────────────────
 #
-# Add Core/Src/<module>.c entries here when a test exercises that module.
+# Each test binary links only the Core/Src files it exercises, listed as
+# SRC_<test name>. Keeping the lists per test (instead of one shared list)
+# means two modules can define the same helper, or a test can provide its own
+# fake of another module, without duplicate-symbol link errors.
+#
 # Do NOT add files that are entry points (main.c) or ISR/HAL hooks — those
 # call hardware and will not compile cleanly on the host.
 #
-# Example (uncomment when you have a module to test):
-#   SRC_FILES := ../Core/Src/command.c \
-#                ../Core/Src/telemetry.c           \
-#                ../Core/Src/boot_sequence.c        \
-#                ../Core/Src/logger.c               \
-#                ../Core/Src/burnwire.c
+# Example:
+#   SRC_test_logger := ../Core/Src/logger.c
 #
-SRC_FILES :=
+SRC_test_command   := ../Core/Src/command.c
+SRC_test_telemetry := ../Core/Src/telemetry.c
 
 # ── Test files ────────────────────────────────────────────────────────────────
 #
@@ -90,8 +91,10 @@ all: build run
 
 build: $(TEST_BINS)
 
-# Each test binary links Unity + the shared SRC_FILES + the test file itself.
-$(BUILD_DIR)/%: unit/%.c $(UNITY_SRC) $(SRC_FILES)
+# Each test binary links Unity + its own SRC_<test> list + the test file itself.
+# Secondary expansion lets the prerequisite list look up SRC_$* per target.
+.SECONDEXPANSION:
+$(BUILD_DIR)/%: unit/%.c $(UNITY_SRC) $$(SRC_$$*)
 	@mkdir -p $(BUILD_DIR)
 	$(CC) $(CFLAGS) $(INCLUDES) $^ -o $@
 
@@ -116,15 +119,17 @@ run: build
 	echo "══════════════════════════════════════════════════"; \
 	[ $$FAIL -eq 0 ]
 
+# Always rebuilds from scratch so no binary is left without coverage flags.
+# Reports coverage of the firmware sources only (Core/Src), not tests or Unity.
 coverage: CFLAGS += $(COVFLAGS)
-coverage: build run
+coverage: clean build run
 	@echo "Generating coverage report..."
 	lcov --capture --directory $(BUILD_DIR) --output-file $(BUILD_DIR)/coverage.info \
 	     --ignore-errors mismatch 2>/dev/null || \
 	lcov --capture --directory $(BUILD_DIR) --output-file $(BUILD_DIR)/coverage.info
-	lcov --remove $(BUILD_DIR)/coverage.info \
-	     '*/unity/*' '/usr/*' \
+	lcov --extract $(BUILD_DIR)/coverage.info '*/Core/Src/*' \
 	     --output-file $(BUILD_DIR)/coverage_filtered.info
+	lcov --list $(BUILD_DIR)/coverage_filtered.info
 	genhtml $(BUILD_DIR)/coverage_filtered.info \
 	        --output-directory $(BUILD_DIR)/coverage_html
 	@echo "Coverage report: $(BUILD_DIR)/coverage_html/index.html"
