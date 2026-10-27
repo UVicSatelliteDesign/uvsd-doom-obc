@@ -141,11 +141,17 @@ int main(void)
           tskIDLE_PRIORITY,
           NULL);
   xTaskCreate(handle_command,
-            "Handle Command",
-            configMINIMAL_STACK_SIZE,
-            NULL,
-            tskIDLE_PRIORITY,
-            NULL);
+          "Handle Command",
+          configMINIMAL_STACK_SIZE,
+          NULL,
+          tskIDLE_PRIORITY,
+          NULL);
+  xTaskCreate(burnwire_parachute,
+          "Burnwire and Parachute",
+          configMINIMAL_STACK_SIZE,
+          NULL,
+          tskIDLE_PRIORITY,
+          NULL);
 
   /* USER CODE END RTOS_THREADS */
 
@@ -280,7 +286,7 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOA_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_11|GPIO_PIN_12, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOA, PARA_BRN_1_Pin|GPIO_PIN_12, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOD, GPIO_PIN_6|GPIO_PIN_7, GPIO_PIN_RESET);
@@ -337,8 +343,8 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Alternate = GPIO_AF4_I2C4;
   HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : PA11 PA12 */
-  GPIO_InitStruct.Pin = GPIO_PIN_11|GPIO_PIN_12;
+  /*Configure GPIO pins : PARA_BRN_1_Pin PA12 */
+  GPIO_InitStruct.Pin = PARA_BRN_1_Pin|GPIO_PIN_12;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -384,6 +390,7 @@ static void MX_GPIO_Init(void)
 void StartDefaultTask(void *argument)
 {
   /* USER CODE BEGIN 5 */
+  (void)argument;
   /* Infinite loop */
   for(;;)
   {
@@ -468,6 +475,8 @@ void Error_Handler(void)
 void assert_failed(uint8_t *file, uint32_t line)
 {
   /* USER CODE BEGIN 6 */
+  (void)file;
+  (void)line;
   /* User can add his own implementation to report the file name and line number,
      ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
   /* USER CODE END 6 */

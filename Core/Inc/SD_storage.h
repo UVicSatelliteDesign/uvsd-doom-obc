@@ -1,5 +1,5 @@
 /*
- * SD_card.h
+ * SD_storage.h
  *
  *  Created on: 17, October, 2026.
  *  Author: Artyom Svetlichnyy.
@@ -21,8 +21,8 @@
  * SD_retrieve_wad_file() is yet to be fully implemented; marked as TODO.
  */
 
-#ifndef INC_SD_CARD_H_
-#define INC_SD_CARD_H_
+#ifndef INC_SD_STORAGE_H_
+#define INC_SD_STORAGE_H_
 
 #include <stdbool.h>
 #include <string.h>
@@ -31,7 +31,7 @@
 enum information_type {
 	GENERAL,
 	DATA,
-	WARNING,
+	OBC_WARNING,
 	OBC_ERROR
 };
 
@@ -83,4 +83,4 @@ FRESULT SD_retrieve_wad_file();
  */
 bool SD_verify_set_up(void);
 
-#endif /* INC_SD_CARD_H_ */
+#endif /* INC_SD_STORAGE_H_ */

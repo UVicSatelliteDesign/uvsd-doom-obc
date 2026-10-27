@@ -1,11 +1,11 @@
 /*
- * SD_card.c
+ * SD_storage.c
  *
  *  Created on: 17, October, 2026.
  *  Author: Artyom Svetlichnyy.
  */
 
-#include "SD_card.h"
+#include "SD_storage.h"
 
 bool SD_functional = false;		// Run SD_verify_set_up to change.
 uint8_t SD_buffer[_MAX_SS];		// Buffer has to be word aligned according to STM32 RM0433 (page 2409). [NO D-CACHE ENABLED!]
@@ -48,7 +48,7 @@ FRESULT SD_write_log_entry(uint8_t* data, uint8_t data_size, enum information_ty
 		case (DATA):
 			entry_prefix = "DATA: ";
 			break;
-		case (WARNING):
+		case (OBC_WARNING):
 			entry_prefix = "WARNING: ";
 			break;
 		case (OBC_ERROR):
