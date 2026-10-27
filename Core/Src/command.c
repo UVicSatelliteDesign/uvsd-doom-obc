@@ -6,6 +6,9 @@
 #include "main.h"
 #include "command.h"
 
+// FreeRTOS task entry: xTaskCreate needs void (*)(void *), so the parameter
+// can't be const.
+// cppcheck-suppress constParameterPointer
 void handle_command(void *vpParameters) {
 	/* TODO: Implement command handling */
 	for(;;) {}
