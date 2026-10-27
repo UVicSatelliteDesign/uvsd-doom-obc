@@ -8,6 +8,9 @@
  *   A) Command triggered  — deployment initiated by a command from TTC
  *   B) Condition triggered — deployment initiated by predefined conditions
  *                            (altitude or time since launch)
+ * and how the burn ends:
+ *   C) Burnwire switched off — by the long timer, or by the short timer once
+ *                              the deployment switches release (issue #25)
  *
  * OPEN QUESTION: BURNWIRE_ALTITUDE_LIMIT and BURNWIRE_TIME_LIMIT in
  * burnwire.h are estimates (issue #25); confirm them with the mech team.
@@ -27,6 +30,7 @@
 
 extern volatile uint8_t trigger_burnwire;
 extern volatile uint8_t deployment_switches;
+extern volatile uint8_t burnwire_started;
 extern volatile uint8_t burnwire_done;
 
 /* ── Simulated flight ────────────────────────────────────────────────────── */
@@ -42,6 +46,7 @@ static uint32_t command_message;
 static uint8_t  burnwire_pin;      /* 1 while the burnwire output is on */
 static uint32_t pin_set_count;
 static uint32_t long_timer_starts;
+static uint32_t short_timer_starts;
 static uint32_t pin_set_time;      /* flight time (s) when the pin was set */
 
 static uint32_t elapsed_seconds(void)
@@ -94,7 +99,7 @@ void set_burnwire_pin(void)
 
 void reset_burnwire_pin(void) { burnwire_pin = 0; }
 void start_long_timer(void)   { long_timer_starts++; }
-void start_short_timer(void)  {}
+void start_short_timer(void)  { short_timer_starts++; }
 
 /* ── Fixture ─────────────────────────────────────────────────────────────── */
 
@@ -104,6 +109,7 @@ void setUp(void)
 
     trigger_burnwire    = 0;
     deployment_switches = 0;
+    burnwire_started    = 0;
     burnwire_done       = 0;
 
     launch_altitude   = 0.0f;
@@ -111,8 +117,9 @@ void setUp(void)
     command_pending   = 0;
     burnwire_pin      = 0;
     pin_set_count     = 0;
-    long_timer_starts = 0;
-    pin_set_time      = 0;
+    long_timer_starts  = 0;
+    short_timer_starts = 0;
+    pin_set_time       = 0;
 }
 
 void tearDown(void) {}
@@ -212,6 +219,40 @@ void test_condition_trigger_only_fires_once(void)
     TEST_ASSERT_EQUAL_UINT8(0, burnwire_pin);
 }
 
+/* ══ C) Burnwire switched off ════════════════════════════════════════════ */
+
+void test_switch_release_during_burn_ends_it_on_short_timer(void)
+{
+    /* Once the burn has started, the deployment switches releasing start the
+     * short timer, which switches the burnwire off before the long timer. */
+    burnwire_command_callback(REQUEST | BURNWIRE);
+    run_burnwire_task();
+
+    deployment_switches_callback();
+    TEST_ASSERT_EQUAL_UINT32(1, short_timer_starts);
+    short_timer_callback();
+
+    TEST_ASSERT_EQUAL_UINT8(0, burnwire_pin);
+}
+
+void test_switch_release_before_burn_does_not_leave_burnwire_on(void)
+{
+    /* Switches releasing before the burn (e.g. the balloon bursts on its own)
+     * must not stop the long timer switching the burnwire off later. */
+    deployment_switches_callback();
+    if (short_timer_starts > 0) {
+        short_timer_callback();               /* a started short timer runs out */
+    }
+
+    burnwire_command_callback(REQUEST | BURNWIRE);
+    run_burnwire_task();
+    TEST_ASSERT_EQUAL_UINT8(1, burnwire_pin);
+
+    long_timer_callback();
+
+    TEST_ASSERT_EQUAL_UINT8(0, burnwire_pin);
+}
+
 /* ── Runner ──────────────────────────────────────────────────────────────── */
 
 int main(void)
@@ -227,6 +268,10 @@ int main(void)
     RUN_TEST(test_predefined_condition_triggers_burnwire);
     RUN_TEST(test_burnwire_not_triggered_before_conditions_met);
     RUN_TEST(test_condition_trigger_only_fires_once);
+
+    /* Burnwire switched off */
+    RUN_TEST(test_switch_release_during_burn_ends_it_on_short_timer);
+    RUN_TEST(test_switch_release_before_burn_does_not_leave_burnwire_on);
 
     return UNITY_END();
 }

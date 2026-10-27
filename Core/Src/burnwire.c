@@ -11,6 +11,7 @@
 // Set from other tasks and ISRs, so volatile
 volatile uint8_t trigger_burnwire = 0;
 volatile uint8_t deployment_switches = 0;
+volatile uint8_t burnwire_started = 0;
 volatile uint8_t burnwire_done = 0;
 
 void burnwire_parachute(void *vpParameters) {
@@ -25,6 +26,7 @@ void burnwire_parachute(void *vpParameters) {
 
 	// One of the conditions for triggering burnwire has been met
 	// TODO: notify for telemetry?
+	burnwire_started = 1;
 	set_burnwire_pin();
 	start_long_timer();
 
@@ -41,7 +43,12 @@ void burnwire_command_callback(uint32_t message){
 
 void deployment_switches_callback(void){
 	deployment_switches = 1;
-	start_short_timer();
+	// Only shortens a burn in progress. Starting the short timer before the
+	// burn would set burnwire_done early, and the long timer would then never
+	// turn the burnwire off.
+	if (burnwire_started){
+		start_short_timer();
+	}
 }
 
 void short_timer_callback(void){
