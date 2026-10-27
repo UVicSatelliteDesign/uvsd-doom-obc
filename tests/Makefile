@@ -65,7 +65,9 @@ MOCK_SRC := mocks/task_mock.c
 # Example:
 #   SRC_test_logger := ../Core/Src/logger.c
 #
-SRC_test_burnwire := ../Core/Src/burnwire.c
+SRC_test_burnwire  := ../Core/Src/burnwire.c
+SRC_test_command   := ../Core/Src/command.c
+SRC_test_telemetry := ../Core/Src/telemetry.c
 
 # ── Test files ────────────────────────────────────────────────────────────────
 #
@@ -125,15 +127,17 @@ run: build
 	echo "══════════════════════════════════════════════════"; \
 	[ $$FAIL -eq 0 ]
 
+# Always rebuilds from scratch so no binary is left without coverage flags.
+# Reports coverage of the firmware sources only (Core/Src), not tests or Unity.
 coverage: CFLAGS += $(COVFLAGS)
-coverage: build run
+coverage: clean build run
 	@echo "Generating coverage report..."
 	lcov --capture --directory $(BUILD_DIR) --output-file $(BUILD_DIR)/coverage.info \
 	     --ignore-errors mismatch 2>/dev/null || \
 	lcov --capture --directory $(BUILD_DIR) --output-file $(BUILD_DIR)/coverage.info
-	lcov --remove $(BUILD_DIR)/coverage.info \
-	     '*/unity/*' '/usr/*' \
+	lcov --extract $(BUILD_DIR)/coverage.info '*/Core/Src/*' \
 	     --output-file $(BUILD_DIR)/coverage_filtered.info
+	lcov --list $(BUILD_DIR)/coverage_filtered.info
 	genhtml $(BUILD_DIR)/coverage_filtered.info \
 	        --output-directory $(BUILD_DIR)/coverage_html
 	@echo "Coverage report: $(BUILD_DIR)/coverage_html/index.html"
