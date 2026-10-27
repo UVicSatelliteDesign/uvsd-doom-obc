@@ -6,6 +6,8 @@
 #include "main.h"
 
 void handle_telemetry(void *vpParameters) {
+	(void)vpParameters;
+
 	/* TODO: Implement telemetry collection */
 	for(;;) {}
 }

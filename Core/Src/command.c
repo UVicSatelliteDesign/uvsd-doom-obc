@@ -7,6 +7,8 @@
 #include "command.h"
 
 void handle_command(void *vpParameters) {
+	(void)vpParameters;
+
 	/* TODO: Implement command handling */
 	for(;;) {}
 }
