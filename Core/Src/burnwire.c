@@ -4,15 +4,14 @@
  */
 
 #include "main.h"
+#include "burnwire.h"
 #include "obc_interface.h"
 #include "telemetry_sensors.h"
 
-#define BURNWIRE_ALTITUDE_LIMIT 23100 // Altitude in meters at which to trigger burnwire
-#define BURNWIRE_TIME_LIMIT (55*60) // Time in seconds at which to trigger burnwire
-
-uint8_t trigger_burnwire = 0;
-uint8_t deployment_switches = 0;
-uint8_t burnwire_done = 0;
+// Set from other tasks and ISRs, so volatile
+volatile uint8_t trigger_burnwire = 0;
+volatile uint8_t deployment_switches = 0;
+volatile uint8_t burnwire_done = 0;
 
 void burnwire_parachute(void *vpParameters) {
 	float altitude = 0.0;
@@ -33,16 +32,19 @@ void burnwire_parachute(void *vpParameters) {
 	vTaskDelete(NULL);
 }
 
-void burnwire_command_callback(){
-	trigger_burnwire = 1;
+void burnwire_command_callback(uint32_t message){
+	// Only an explicit burnwire request may trigger the burnwire
+	if (message == (REQUEST | BURNWIRE)){
+		trigger_burnwire = 1;
+	}
 }
 
-void deployment_switches_callback(){
+void deployment_switches_callback(void){
 	deployment_switches = 1;
 	start_short_timer();
 }
 
-void short_timer_callback(){
+void short_timer_callback(void){
 	// If not already done, turn off the burnwire pin
 	if (!burnwire_done){
 		reset_burnwire_pin();
@@ -50,7 +52,7 @@ void short_timer_callback(){
 	}
 }
 
-void long_timer_callback(){
+void long_timer_callback(void){
 	// If not already done, turn off the burnwire pin
 	if (!burnwire_done){
 		reset_burnwire_pin();

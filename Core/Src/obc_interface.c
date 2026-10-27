@@ -9,30 +9,30 @@
 #define BURNWIRE_SHORT_TIME 60 // TODO: Set to actual time in seconds
 
 // Should return time since launch in seconds
-uint32_t get_flight_time() {
+uint32_t get_flight_time(void) {
 	return 0;
 }
 
-void set_burnwire_pin() {
+void set_burnwire_pin(void) {
 	// Set burnwire pin high to enable 7V7 output to burnwire
 	HAL_GPIO_WritePin(PARA_BRN_1_GPIO_Port, PARA_BRN_1_Pin, GPIO_PIN_SET);
 	return;
 }
 
-void reset_burnwire_pin() {
+void reset_burnwire_pin(void) {
 	// Set burnwire pin low to disable 7V7 output to burnwire
 	HAL_GPIO_WritePin(PARA_BRN_1_GPIO_Port, PARA_BRN_1_Pin, GPIO_PIN_RESET);
 	return;
 }
 
 // Should start "long timer" for burnwire pin set duration
-void start_long_timer() {
+void start_long_timer(void) {
 	// TODO: Use BURNWIRE_LONG_TIME
 	return;
 }
 
 // Should start "short timer" for burnwire pin set duration
-void start_short_timer() {
+void start_short_timer(void) {
 	// TODO: Use BURNWIRE_SHORT_TIME
 	return;
 }
