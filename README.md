@@ -1,10 +1,9 @@
-# UVSD DOOM OBC : SD functionality
-## Notes:
-+ This implementation does not account for D-Caching, which of the time of writing is turned off.
-+ The testing of this implementation was done with a modified driver (FATFS/Target/sd_diskio.c) in order to make card detection always pass.
-+ The .ioc file was changed in order to use the HSE & LSE of the board, and also changed the clock line configuration of SDMMC1 approximately 56.7MHz.
-+ The FreeRTOS configuration file was changed by enabling the StackOverflowHook for detection.
+# UVSD DOOM OBC
+Code for the On-Board Computer on the DOOM project. The OBC runs on a STM32H733VGT6. Currently code for the DOOM Balloon phase.
 
-## Further Implementation Details Required:
-+ The naming convention for directories and files on the SD card.
-+ Passing the SD buffer contents to the OBC in order to pass over the WAD file.
+### Instructions for generating code
+After cloning the repository, in order to compile the code you will need to generate Middleware and filesystem sources using CubeMX. To do this,
+
+1. Open `uvsd-doom-obc.ioc` in CubeMX.
+2. It should be configured correctly already, but it is important that under the `Project Manager` tab, `Toolchain / IDE` is set to `STM32CubeIDE` and `Generate Under Root` is checked.
+3. Click the `GENERATE CODE` button. This will add all required source files and build configurations to the project. You can now open the project in STM32CubeIDE and build it.
