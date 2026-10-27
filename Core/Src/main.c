@@ -354,12 +354,11 @@ static void MX_GPIO_Init(void)
   * @param  argument: Not used
   * @retval None
   */
-// osThreadNew needs void (*)(void *), so argument can't be const.
-// cppcheck-suppress constParameterCallback
 /* USER CODE END Header_StartDefaultTask */
 void StartDefaultTask(void *argument)
 {
   /* USER CODE BEGIN 5 */
+  (void)argument;
   /* Infinite loop */
   for(;;)
   {
@@ -442,11 +441,11 @@ void Error_Handler(void)
   * @param  line: assert_param error line source number
   * @retval None
   */
-// Signature is fixed by the prototype in stm32h7xx_hal_conf.h.
-// cppcheck-suppress constParameterPointer
 void assert_failed(uint8_t *file, uint32_t line)
 {
   /* USER CODE BEGIN 6 */
+  (void)file;
+  (void)line;
   /* User can add his own implementation to report the file name and line number,
      ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
   /* USER CODE END 6 */
