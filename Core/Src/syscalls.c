@@ -77,7 +77,6 @@ __attribute__((weak)) int _read(int file, char *ptr, int len)
   return len;
 }
 
-// cppcheck-suppress constParameterPointer
 __attribute__((weak)) int _write(int file, char *ptr, int len)
 {
   (void)file;

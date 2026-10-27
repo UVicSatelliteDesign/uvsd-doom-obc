@@ -8,6 +8,8 @@
 
 #include "sd_card.h"
 
+#include <string.h>
+
 
 sd_status_t sd_init(void) {
 	return SD_OK;
@@ -36,6 +38,8 @@ sd_status_t sd_read(const char *path, uint32_t offset, void *buffer, size_t leng
 		return SD_ERR_INVALID_ARG;
 	}
 
+	/* No card access yet: hand back zeroed data rather than leaving it uninitialised. */
+	memset(buffer, 0, length);
 	return SD_OK;
 }
 
