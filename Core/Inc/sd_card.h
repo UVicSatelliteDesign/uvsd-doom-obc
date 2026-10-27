@@ -1,6 +1,9 @@
 /**
  * @file sd_card.h
  * @brief Simple functions for reading and writing files on the SD card.
+ *
+ * Each call keeps a FatFs file object (about 600 bytes) on the caller's stack,
+ * so call these from a task with room for it.
  */
 
 
@@ -15,7 +18,7 @@
 
 typedef enum {
 	SD_OK = 0,              // all good
-	SD_ERR_INVALID_ARG,     // passed a NULL pointer, an empty path, or a length of 0
+	SD_ERR_INVALID_ARG,     // passed a NULL pointer, an empty or invalid path, a length of 0, or an unknown write mode
 	SD_ERR_NOT_MOUNTED,     // sd_init() hasn't worked yet
 	SD_ERR_NOT_FOUND,       // that file or folder doesn't exist
 	SD_ERR_FULL,            // the card's out of space
