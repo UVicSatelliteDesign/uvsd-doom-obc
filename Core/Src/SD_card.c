@@ -78,8 +78,7 @@ FRESULT SD_write_log_entry(uint8_t* data, uint8_t data_size, enum information_ty
 }
 
 FRESULT SD_retrieve_wad_file(){
-	// TODO : Insert the name of wad file path into the string parameter below.
-	FRESULT result = f_open(&SDFile, "WAD/...", FA_READ);
+	FRESULT result = f_open(&SDFile, "WAD/doom.wad", FA_READ);
 	if (result == FR_OK){
 		UINT bytes_read = 0;
 		while (1){
@@ -113,14 +112,14 @@ bool SD_verify_set_up(void){
 	}
 
 	// Write into the log that the SD card was verified:
+	SD_functional = true;		// Prematurely set to true to test writing functionality.
 	uint8_t log_entry[] = "SD card status verification.";
 	result = SD_write_log_entry(log_entry, sizeof(log_entry) , GENERAL);
 	if (result != FR_OK){
+		SD_functional = false;
 		return (false);
 	}
 
-	// Set the global variable.
-	SD_functional = true;
 	return (true);
 }
 

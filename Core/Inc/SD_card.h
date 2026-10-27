@@ -5,6 +5,22 @@
  *  Author: Artyom Svetlichnyy.
  */
 
+/*
+ * Usage Guide:
+ * 1) Mount the SD card volume through SD_mount().
+ * 2) Format the SD card through SD_format(), but ideally should
+ *    be formatted prior to usage. Refer to @note on SD_format() for the reason.
+ * 3) Create the directory structure using SD_set_up_direcoties().
+ * 4) Verify the SD card set up using SD_verify_set_up() in order to get
+ *    access to usage of SD_write_log_entry().
+ * 5) Use SD_write_log_entry(*arguments*) to write log entries into log.txt.
+ * 6) Use SD_retrieve_wad_file() to send doom.wad over to its destination.
+ * 7) Dismount the SD card when its functionality is no longer needed.
+ *
+ * Note:
+ * SD_retrieve_wad_file() is yet to be fully implemented; marked as TODO.
+ */
+
 #ifndef INC_SD_CARD_H_
 #define INC_SD_CARD_H_
 
@@ -33,6 +49,7 @@ FRESULT SD_mount(void);
 FRESULT SD_dismount(void);
 
 /*
+ * @note: This function needs a larger task stack size than other SD functions! (Works with 2048 words.)
  * @brief: Forcefully creates a new file system (chosen by FatFS) on the SD card.
  * @return: The FRESULT enum from the operation.
  */
