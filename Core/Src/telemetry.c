@@ -106,8 +106,13 @@ void handle_telemetry(void *vpParameters) {
 			read_temps();
 		}
 
-		// format for SD card writes
-		
+		// format for SD card writes -> not entirely sure might ask artyom
+		// Planned layout: one CSV line per group that sampled this cycle, <TAG>,<tick_ms>,<values...>
+		//   IMU,<ms>,gx,gy,gz,ax,ay,az                     (deg/s, m/s^2)
+		//   ALT,<ms>,altitude                              (m)
+		//   PWR,<ms>,obc_i,nrf_i,slip_i,orca_i,bw_i,obc_v,nrf_v,slip_v,orca_v,bw_v   (A, V)
+		//   TMP,<ms>,reg3v3,reg5v,reg7v7                   (degC)
+
 		// write lines to SD telemetry file, flush every TELEMETRY_SD_FLUSH_PERIOD_MS
 		//    (on FRESULT error, flag + remount next cycle)
 
