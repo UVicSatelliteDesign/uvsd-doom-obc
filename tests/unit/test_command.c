@@ -11,31 +11,10 @@
  * send unprompted messages to the OBC, or whether all communication is
  * initiated by a command received from the radio.
  *
- * NOTE: The placeholder types below (SubsystemID_t, CommandStatus_t) are
- * defined here as a sketch of the intended interface. They do nothing until
- * command.c and its header exist. Move them to
- * command.h when that file is written.
- *
- * TODO: #include "command.h" once the module is written.
  */
 
 #include "../unity/unity.h"
-
-/* ── Placeholder types ───────────────────────────────────────────────────── */
-
-typedef enum {
-    SUBSYSTEM_PAYLOAD = 0,
-    SUBSYSTEM_ADCS    = 1,
-    SUBSYSTEM_EPS     = 2,
-    SUBSYSTEM_COUNT
-} SubsystemID_t;
-
-typedef enum {
-    CMD_OK               =  0,
-    CMD_ERR_NULL         = -1,
-    CMD_ERR_UNKNOWN      = -2,
-    CMD_ERR_INVALID_LEN  = -3
-} CommandStatus_t;
+#include "command.h"
 
 /* ── Fixture ─────────────────────────────────────────────────────────────── */
 
