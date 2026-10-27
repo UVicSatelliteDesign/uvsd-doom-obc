@@ -354,8 +354,6 @@ static void MX_GPIO_Init(void)
   * @param  argument: Not used
   * @retval None
   */
-// osThreadNew needs void (*)(void *), so argument can't be const.
-// cppcheck-suppress constParameterCallback
 /* USER CODE END Header_StartDefaultTask */
 void StartDefaultTask(void *argument)
 {
@@ -442,8 +440,6 @@ void Error_Handler(void)
   * @param  line: assert_param error line source number
   * @retval None
   */
-// Signature is fixed by the prototype in stm32h7xx_hal_conf.h.
-// cppcheck-suppress constParameterPointer
 void assert_failed(uint8_t *file, uint32_t line)
 {
   /* USER CODE BEGIN 6 */

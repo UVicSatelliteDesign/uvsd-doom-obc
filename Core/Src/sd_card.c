@@ -24,9 +24,6 @@ sd_status_t sd_write(const char *path, const void *data, size_t length, sd_write
 	return SD_OK;
 }
 
-// buffer is the destination for the data read. The stub doesn't fill it yet,
-// so cppcheck thinks it could be const. Remove this once sd_read is implemented.
-// cppcheck-suppress constParameterPointer
 
 sd_status_t sd_read(const char *path, uint32_t offset, void *buffer, size_t length, size_t *bytes_read) {
 	(void)offset;
