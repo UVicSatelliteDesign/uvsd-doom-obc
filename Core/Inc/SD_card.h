@@ -29,9 +29,9 @@
 #include "fatfs.h"
 
 enum information_type {
-	GENERAL,
-	DATA,
-	WARNING,
+	OBC_GENERAL,
+	OBC_DATA,
+	OBC_WARNING,
 	OBC_ERROR
 };
 

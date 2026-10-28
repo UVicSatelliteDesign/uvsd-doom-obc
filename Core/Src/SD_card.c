@@ -45,10 +45,10 @@ FRESULT SD_write_log_entry(uint8_t* data, uint8_t data_size, enum information_ty
 
 	const char* entry_prefix = NULL;
 	switch (type_of_data){
-		case (DATA):
+		case (OBC_DATA):
 			entry_prefix = "DATA: ";
 			break;
-		case (WARNING):
+		case (OBC_WARNING):
 			entry_prefix = "WARNING: ";
 			break;
 		case (OBC_ERROR):
@@ -114,7 +114,7 @@ bool SD_verify_set_up(void){
 	// Write into the log that the SD card was verified:
 	SD_functional = true;		// Prematurely set to true to test writing functionality.
 	uint8_t log_entry[] = "SD card status verification.";
-	result = SD_write_log_entry(log_entry, sizeof(log_entry) , GENERAL);
+	result = SD_write_log_entry(log_entry, sizeof(log_entry) , OBC_GENERAL);
 	if (result != FR_OK){
 		SD_functional = false;
 		return (false);
