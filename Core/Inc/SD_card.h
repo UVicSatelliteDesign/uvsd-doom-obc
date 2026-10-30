@@ -25,7 +25,6 @@
 #define INC_SD_CARD_H_
 
 #include <stdbool.h>
-#include <string.h>
 #include "fatfs.h"
 
 enum information_type {

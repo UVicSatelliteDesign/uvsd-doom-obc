@@ -6,6 +6,7 @@
  */
 
 #include "SD_card.h"
+#include <string.h>
 
 bool SD_functional = false;		// Run SD_verify_set_up to change.
 uint8_t SD_buffer[_MAX_SS];		// Buffer has to be word aligned according to STM32 RM0433 (page 2409). [NO D-CACHE ENABLED!]
