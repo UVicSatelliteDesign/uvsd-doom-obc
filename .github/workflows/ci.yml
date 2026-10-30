@@ -129,6 +129,8 @@ jobs:
             --suppress=missingIncludeSystem
             --suppress=missingInclude
             --suppress=toomanyconfigs
+            # sd_read is still a stub (buffer unused). Remove once #46 lands.
+            --suppress=constParameterPointer:Core/Src/sd_card.c
             -I Core/Inc
           )
 
