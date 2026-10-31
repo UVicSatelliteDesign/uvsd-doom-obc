@@ -30,6 +30,7 @@ extern TickType_t mock_task_tick_count;
 
 static inline void vTaskDelay(TickType_t ticks) { mock_task_tick_count += ticks; }
 static inline TickType_t xTaskGetTickCount(void) { return mock_task_tick_count; }
+static inline void vTaskDelayUntil(TickType_t *prev, TickType_t inc) { *prev += inc; mock_task_tick_count = *prev; }
 static inline TaskHandle_t xTaskGetCurrentTaskHandle(void) { return (TaskHandle_t)1; }
 static inline TaskHandle_t xTaskGetHandle(const char *name) { (void)name; return (TaskHandle_t)1; }
 static inline void vTaskDelete(TaskHandle_t t) { (void)t; }
