@@ -9,6 +9,10 @@
 #include <stdint.h>
 #include <stddef.h>
 
+/* The real cmsis_os.h includes these too. */
+#include "FreeRTOS.h"
+#include "task.h"
+
 /* ── Priority ────────────────────────────────────────────────────────────── */
 
 typedef enum {
