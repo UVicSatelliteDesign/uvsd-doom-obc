@@ -66,19 +66,40 @@ if [[ ! -d Drivers/CMSIS/Include || ! -d Middlewares/Third_Party/FreeRTOS || ! -
     [[ -d Middlewares/Third_Party/FatFs/src ]] || cp -R "$TMP/cube/Middlewares/Third_Party/FatFs/src" Middlewares/Third_Party/FatFs/
 fi
 
-# FatFs glue that CubeMX would generate for "FATFS: User-defined" with FreeRTOS.
-for f in App/fatfs.c App/fatfs.h Target/user_diskio.c Target/user_diskio.h; do
-    if [[ ! -f "FATFS/$f" ]]; then
-        mkdir -p "FATFS/$(dirname "$f")"
-        cp "$HERE/FATFS/$f" "FATFS/$f"
-    fi
-done
+# Copy CI stand-ins for CubeMX's FatFs glue, unless CubeMX output is already there.
+copy_glue() {
+    local from="$1"; shift
+    for f in "$@"; do
+        if [[ ! -f "FATFS/$f" ]]; then
+            mkdir -p "FATFS/$(dirname "$f")"
+            cp "$from/$f" "FATFS/$f"
+        fi
+    done
+}
+
+# The .ioc decides which FatFs drives CubeMX generates: "User-defined" always,
+# plus "SD Card" on SDMMC1 when VP_FATFS_VS_SDIO is enabled.
+volumes=1
+if grep -q '=VP_FATFS_VS_SDIO$' uvsd-doom-obc.ioc; then
+    volumes=2
+    copy_glue "$HERE/FATFS_SD" App/fatfs.c App/fatfs.h Target/bsp_driver_sd.c Target/bsp_driver_sd.h
+
+    # sd_diskio is ST's FreeRTOS + DMA template, pointed at bsp_driver_sd.h as CubeMX does.
+    drivers=Middlewares/Third_Party/FatFs/src/drivers
+    [[ -f FATFS/Target/sd_diskio.c ]] || \
+        sed 's/"sd_diskio_dma_rtos.h"/"sd_diskio.h"/' \
+            "$drivers/sd_diskio_dma_rtos_template_bspv1.c" > FATFS/Target/sd_diskio.c
+    [[ -f FATFS/Target/sd_diskio.h ]] || \
+        sed 's/"stm32xxxxx_{eval}{discovery}_sd.h"/"bsp_driver_sd.h"/' \
+            "$drivers/sd_diskio_dma_rtos_template.h" > FATFS/Target/sd_diskio.h
+fi
+copy_glue "$HERE/FATFS" App/fatfs.c App/fatfs.h Target/user_diskio.c Target/user_diskio.h
 
 # ffconf.h is ST's template with the settings CubeMX writes when FreeRTOS is on.
 if [[ ! -f FATFS/Target/ffconf.h ]]; then
     sed -e 's/^#define _FS_REENTRANT[[:space:]].*/#define _FS_REENTRANT	1/' \
         -e 's/^#define[[:space:]]_USE_LFN[[:space:]].*/#define	_USE_LFN	0/' \
-        -e 's/^#define _VOLUMES[[:space:]].*/#define _VOLUMES	1/' \
+        -e "s/^#define _VOLUMES[[:space:]].*/#define _VOLUMES	$volumes/" \
         Middlewares/Third_Party/FatFs/src/ffconf_template.h > FATFS/Target/ffconf.h
 fi
 
