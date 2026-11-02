@@ -93,6 +93,7 @@ void handle_telemetry(void *vpParameters) {
 
 	for(;;) {
 		// Read sensors whose rate group is due this cycle
+		// cppcheck-suppress moduloofone
 		if (cycle % TELEMETRY_CYCLES(TELEMETRY_IMU_PERIOD_MS) == 0) {
 			read_imu();
 		}
