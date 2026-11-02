@@ -32,6 +32,9 @@ extern "C" {
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
+#include "FreeRTOS.h"
+#include "task.h"
+
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
@@ -55,12 +58,30 @@ void Error_Handler(void);
 /* USER CODE BEGIN EFP */
 void handle_telemetry(void *vpParameters);
 void handle_command(void *vpParameters);
+void burnwire_parachute(void *vpParameters);
 
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
+#define PARA_BRN_1_Pin GPIO_PIN_11
+#define PARA_BRN_1_GPIO_Port GPIOA
 
 /* USER CODE BEGIN Private defines */
+
+/////////////////////////////////
+// FreeRTOS task message masks //
+/////////////////////////////////
+// TODO: Update if needed
+// Type
+#define REQUEST 0x0001
+#define INFO 0x0002
+#define WARNING 0x0004
+#define ERROR 0x0008
+// Peripheral
+#define BURNWIRE 0x0100
+#define DEPLOYMENT_SWITCHES 0x0200
+#define LONG_TIMER 0x0400
+#define SHORT_TIMER 0x0800
 
 /* USER CODE END Private defines */
 

@@ -65,6 +65,7 @@ MOCK_SRC := mocks/task_mock.c
 # Example:
 #   SRC_test_logger := ../Core/Src/logger.c
 #
+SRC_test_burnwire  := ../Core/Src/burnwire.c
 SRC_test_command   := ../Core/Src/command.c
 SRC_test_telemetry := ../Core/Src/telemetry.c ../Core/Src/telemetry_sensors.c
 
