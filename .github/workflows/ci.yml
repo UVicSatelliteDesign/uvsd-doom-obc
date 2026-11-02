@@ -5,13 +5,16 @@
 #
 # Triggers
 # --------
-#   • Every pull request targeting main or develop
-#   • Every push to main or develop (keeps the badge green on merges)
+#   • Every pull request targeting main
+#   • Every push to main (keeps the badge green on merges)
+#   • Manual run (Actions → CI → Run workflow)
 #
 # Jobs
 # ----
 #   unit-tests   — builds and runs the host-based Unity test suite
 #   lint         — runs cppcheck static analysis on Core/Src and Core/Inc
+#   coverage     — reruns the unit tests with gcov and publishes an lcov report
+#   firmware     — cross-compiles the real firmware with arm-none-eabi-gcc
 #
 # =============================================================================
 
@@ -19,20 +22,21 @@ name: CI
 
 on:
   pull_request:
-    branches: [ main, develop ]
+    branches: [ main ]
   push:
-    branches: [ main, develop ]
+    branches: [ main ]
+  workflow_dispatch:
 
 jobs:
 
   # ── Host-based unit tests ──────────────────────────────────────────────────
   unit-tests:
     name: Unit Tests
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Install build tools
         run: |
@@ -46,20 +50,57 @@ jobs:
       # Upload the build artefacts on failure so you can inspect them
       - name: Upload test artefacts on failure
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: test-build-failure
           path: tests/build/
           retention-days: 7
 
-  # ── Static analysis ────────────────────────────────────────────────────────
-  lint:
-    name: Static Analysis (cppcheck)
-    runs-on: ubuntu-latest
+  # ── Coverage ───────────────────────────────────────────────────────────────
+  # Report only: it never fails the build on a coverage percentage.
+  coverage:
+    name: Coverage
+    runs-on: ubuntu-24.04
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
+
+      - name: Install build tools
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends gcc make lcov
+
+      - name: Run unit tests with coverage
+        working-directory: tests
+        run: make coverage | tee coverage.txt
+
+      - name: Add coverage table to the job summary
+        if: always()
+        working-directory: tests
+        run: |
+          {
+            echo '### Coverage of Core/Src'
+            echo '```'
+            sed -n '/Filename/,$p' coverage.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v7
+        with:
+          name: coverage-report
+          path: tests/build/coverage_html/
+          retention-days: 14
+
+  # ── Static analysis ────────────────────────────────────────────────────────
+  lint:
+    name: Static Analysis (cppcheck)
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
 
       - name: Install cppcheck
         run: |
@@ -68,15 +109,78 @@ jobs:
 
       # Only analyse hand-written code in Core/; generated Drivers/Middlewares
       # are excluded because they're not committed (see .gitignore).
+      #
+      # Core/Src also holds STM32CubeMX/CubeIDE output (main.c, freertos.c,
+      # stm32h7xx_*.c, syscalls.c, ...), recognised by its USER CODE markers or
+      # ST copyright header. CubeMX rewrites everything outside USER CODE blocks
+      # on each regeneration and HAL callback signatures are fixed, so style
+      # findings there can't be fixed for good. Those files are still checked
+      # for bugs (warning, performance, portability); hand-written files get
+      # style checks too.
       - name: Run cppcheck
         run: |
-          cppcheck \
-            --enable=warning,style,performance,portability \
-            --error-exitcode=1 \
-            --inline-suppr \
-            --std=c11 \
-            --suppress=missingIncludeSystem \
-            --suppress=missingInclude \
-            --suppress=toomanyconfigs \
-            -I Core/Inc \
-            Core/Src/ Core/Inc/
+          generated_marker='USER CODE BEGIN|Copyright \(c\) .*STMicroelectronics'
+          mapfile -t handwritten < <(grep -LE "$generated_marker" Core/Src/*.c)
+          mapfile -t generated   < <(grep -lE "$generated_marker" Core/Src/*.c)
+          common=(
+            --error-exitcode=1
+            --inline-suppr
+            --std=c11
+            --suppress=missingIncludeSystem
+            --suppress=missingInclude
+            --suppress=toomanyconfigs
+            # sd_read is still a stub (buffer unused). Remove once #46 lands.
+            --suppress=constParameterPointer:Core/Src/sd_card.c
+            -I Core/Inc
+          )
+
+          status=0
+          echo "::group::Hand-written: ${handwritten[*]}"
+          cppcheck --enable=warning,style,performance,portability "${common[@]}" "${handwritten[@]}" || status=1
+          echo "::endgroup::"
+          echo "::group::CubeMX-generated: ${generated[*]}"
+          cppcheck --enable=warning,performance,portability "${common[@]}" "${generated[@]}" || status=1
+          echo "::endgroup::"
+          exit $status
+
+  # ── Firmware build ─────────────────────────────────────────────────────────
+  # CubeMX output isn't committed, so the ST HAL/CMSIS/FreeRTOS/FatFs sources
+  # are fetched at the version pinned in the .ioc (see ci/firmware/).
+  firmware:
+    name: Firmware Build (arm-none-eabi-gcc)
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Install ARM toolchain
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends \
+            gcc-arm-none-eabi binutils-arm-none-eabi libnewlib-arm-none-eabi make
+
+      - name: Cache ST sources
+        uses: actions/cache@v6
+        with:
+          path: |
+            Drivers
+            Middlewares
+          key: cube-h7-${{ hashFiles('ci/firmware/fetch_cube_deps.sh') }}
+
+      - name: Fetch CubeMX dependencies
+        run: ci/firmware/fetch_cube_deps.sh
+
+      - name: Build firmware
+        run: make -C ci/firmware -j"$(nproc)"
+
+      - name: Upload firmware
+        uses: actions/upload-artifact@v7
+        with:
+          name: uvsd-doom-obc-firmware
+          path: |
+            ci/firmware/build/uvsd-doom-obc.elf
+            ci/firmware/build/uvsd-doom-obc.hex
+            ci/firmware/build/uvsd-doom-obc.bin
+            ci/firmware/build/uvsd-doom-obc.map
+          retention-days: 14
