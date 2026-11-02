@@ -53,8 +53,7 @@ FATFS_SRCS := \
   $(FATFS_DIR)/ff.c \
   $(FATFS_DIR)/ff_gen_drv.c \
   $(FATFS_DIR)/option/syscall.c \
-  $(ROOT)/FATFS/App/fatfs.c \
-  $(ROOT)/FATFS/Target/user_diskio.c
+  $(wildcard $(ROOT)/FATFS/App/*.c $(ROOT)/FATFS/Target/*.c)
 
 C_SRCS   := $(CORE_SRCS) $(HAL_SRCS) $(RTOS_SRCS) $(FATFS_SRCS)
 ASM_SRCS := $(ROOT)/Core/Startup/startup_stm32h733vgtx.s
