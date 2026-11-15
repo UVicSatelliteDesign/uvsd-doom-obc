@@ -23,7 +23,6 @@
 #include "main.h"
 
 #include "semphr.h"
-#include "burnwire.h"
 #include "telemetry_sensors.h"
 #include "command.h"
 
@@ -80,6 +79,7 @@ int task_communication_center(void)
 
     if(is_burnwire_activated == 1){
       // Empty until we get the burnwire and notify GS and telemetry
+
       send_burnwire_event();
     }
 
@@ -126,18 +126,21 @@ int receive_burnwire_command()
 int send_burnwire_event()
 {
   
+  return 0;
 }
 
 // send telemetry data to the ground station
 int send_telemetry_data()
 {
-  
+
+  return 0; 
 }
 
 // receive telemetry data from the telemetry sensors
 int receive_telemetry_data()
 {
   
+  return 0;
 }
 
 
