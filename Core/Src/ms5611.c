@@ -4,19 +4,7 @@
 */
 
 #include "ms5611.h"
-#include "stm32h7xx_hal.h"
-#include <stdint.h>
-#include <math.h>
 
-
-//put things in header later
-#define MS5611_RESET 0x1E
-#define MS5611_C1 0xA2
-#define MS5611_D1 0X48
-#define MS5611_D2 0X58
-#define MS5611_ADC_READ 0X00
-
-#define REFERENCE_PRESSURE 1013.25
 
 /*
  * Read datasheet relating MS5611-01BA03 for details
@@ -27,6 +15,7 @@
  * Notable Mentions:
  *
  * MS5611-01BA03 address for I^2C communication is 0B111011Cx (so either 0X76 or 0X77)
+ * The documentation implies 0x76
  * Read page 12 of datasheet for detail
  *
  * STM32_HAL expects 7-bit address to be shifted left by 1
@@ -39,7 +28,7 @@ HAL_StatusTypeDef ms5611_reset(I2C_HandleTypeDef *hi2c) {
 
 	HAL_StatusTypeDef status = HAL_I2C_Master_Transmit(
 			hi2c,
-			(0x76 << 1),	//target address for MS5611 I2C port for altimeter
+			(MS5611_ADDRESS << 1),	//target address for MS5611 I2C port for altimeter
 			&command,
 			1,	//number of bytes to transmit
 			100);
@@ -48,7 +37,7 @@ HAL_StatusTypeDef ms5611_reset(I2C_HandleTypeDef *hi2c) {
 		return status;
 	}
 
-	HAL_Delay(4);	//should I change this?
+	HAL_Delay(4);
 	return HAL_OK;
 }
 
@@ -129,16 +118,17 @@ HAL_StatusTypeDef ms5611_read_adc(I2C_HandleTypeDef *hi2c, uint16_t address, uin
 }
 
 
-/*
+/* Calibrates raw pressure and temperature measurements into compensated measurements.
+ * Temperature is in degrees Celsius and pressure is in millibars
  * See page 8 and 9 of datasheet for detail
 */
-int ms5611_calc(uint16_t C[6], uint32_t D1, uint32_t D2, float *pressure_mbar, float *temperature_c) {
+int ms5611_calc(uint16_t C[6], uint32_t D1, uint32_t D2, double *pressure_mbar, double *temperature_c) {
 	if (pressure_mbar == NULL || temperature_c == NULL) {
 		return 0;
 	}
 
-	int32_t dT = D2 - (int64_t)C[4] * (1 << 8);	//dT = D2 - C5 * 2^8
-	int32_t TEMP = 2000 + dT * C[5] / (1 << 23);	//TEMP = 2000 + dT * C6 / 2^23
+	int64_t dT = D2 - (int64_t)C[4] * (1 << 8);	//dT = D2 - C5 * 2^8
+	int64_t TEMP = 2000 + dT * C[5] / (1 << 23);	//TEMP = 2000 + dT * C6 / 2^23
 
 	int64_t OFF = (int64_t)C[1] * (1 << 16) + ((int64_t)C[3] * dT) / (1 << 7);	//OFF = C2 * 2^16 + (C4 * dT) / 2^7
 	int64_t SENS = (int64_t)C[0] * (1 << 15) + ((int64_t)C[2] * dT) / (1 << 8);	//SENS = C1 * 2^15 + (C3 * dT) / 2^8
@@ -163,10 +153,10 @@ int ms5611_calc(uint16_t C[6], uint32_t D1, uint32_t D2, float *pressure_mbar, f
 	OFF -= OFF2;	//OFF = OFF - OFF2
 	SENS -= SENS2;	//SENS = SENS - SENS2
 
-	int32_t P = ((int64_t)D1 * SENS / (1 << 21) - OFF) / (1 << 15);	//P = (D1 * SENS / 2^21 - OFF) / 2^15
+	int64_t P = ((int64_t)D1 * SENS / (1 << 21) - OFF) / (1 << 15);	//P = (D1 * SENS / 2^21 - OFF) / 2^15
 
-	*pressure_mbar = (float)P / 100.0;
-	*temperature_c = (float)TEMP / 100.0;
+	*pressure_mbar = (double)P / 100.0;
+	*temperature_c = (double)TEMP / 100.0;
 
 	return 1;
 
