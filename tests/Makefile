@@ -66,7 +66,9 @@ MOCK_SRC := mocks/task_mock.c
 #   SRC_test_logger := ../Core/Src/logger.c
 #
 SRC_test_command   := ../Core/Src/command.c
-SRC_test_telemetry := ../Core/Src/telemetry.c ../Core/Src/telemetry_sensors.c
+SRC_test_telemetry := ../Core/Src/telemetry.c	\
+				 	  ../Core/Src/telemetry_sensors.c	\
+				 	  ../Core/Src/ms5611.c
 
 # ── Test files ────────────────────────────────────────────────────────────────
 #
@@ -103,7 +105,7 @@ build: $(TEST_BINS)
 .SECONDEXPANSION:
 $(BUILD_DIR)/%: unit/%.c $(UNITY_SRC) $(MOCK_SRC) $$(SRC_$$*)
 	@mkdir -p $(BUILD_DIR)
-	$(CC) $(CFLAGS) $(INCLUDES) $^ -o $@
+	$(CC) $(CFLAGS) $(INCLUDES) $^ -o $@ -lm
 
 run: build
 	@echo ""

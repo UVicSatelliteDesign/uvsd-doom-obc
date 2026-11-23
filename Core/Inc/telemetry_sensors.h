@@ -8,6 +8,9 @@
 #define TELEMETRY_SENSORS_H
 
 
+#include "stm32h7xx_hal.h"
+
+
 /**
  * @brief 3-axis measurement structure for motion sensors.
  */
@@ -128,18 +131,43 @@ float read_7v7reg_temperature(void);
 
 
 
+
+/* ALTIMETER CODE BEGINS */
+
+
+/* Altimeter initialization with the MS5611 sensor.
+ * Sensor is reset before initialization as per specification.
+ * MS5611's 128-bit PROM stores 6 calibration coefficients (C1-C6) used
+ * to convert raw pressure and temperature data into accurate measurements.
+ * See page 6 of datasheeet for detail here:
+ * https://www.amsys-sensor.com/downloads/data/MS5611-01BA03-AMSYS-datasheet.pdf
+ */
+HAL_StatusTypeDef altimeter_init(I2C_HandleTypeDef *hi2c);
+
+
 /**
  * @brief Reads the current altitude.
  * @return Altitude in Meters (m).
  */
-
 float read_altimeter(void);
+
+
+/* Calculations are derived from International Standard Atmosphere and U.S. Standard Atmosphere.
+ * Note:
+ * The MS5611 sensor is rated for a minimum extended pressure range of 10 mbar.
+ * Therefore, altitude can only be measured up to the stratosphere below 32km.
+ */
+float calculate_altitude(double P);
+
+/* ALTIMETER CODE ENDS */
+
 
 
 /**
  * @brief Reads the current 3-axis angular velocity from the gyroscope.
  * @return Angular velocity in Degrees per Second (°/s) for the X, Y, and Z axes.
  */
+
 
 vector3f_t read_gyroscope(void);
 
