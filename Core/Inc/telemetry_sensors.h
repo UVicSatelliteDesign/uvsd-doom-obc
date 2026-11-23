@@ -149,7 +149,7 @@ HAL_StatusTypeDef altimeter_init(I2C_HandleTypeDef *hi2c);
  * @brief Reads the current altitude.
  * @return Altitude in Meters (m).
  */
-float read_altimeter(I2C_HandleTypeDef *hi2c);
+float read_altimeter(void);
 
 
 /* Calculations are derived from International Standard Atmosphere and U.S. Standard Atmosphere.

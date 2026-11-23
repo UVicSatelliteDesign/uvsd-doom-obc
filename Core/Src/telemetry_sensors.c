@@ -12,6 +12,7 @@
 #define MS5611_ADDRESS 0X76
 static uint16_t altimeter_coefficients[6];	//coefficients C1-C6
 static bool altimeter_initialized = false;
+static I2C_HandleTypeDef *altimeter_hi2c;
 
 
 // Current reading function stubs
@@ -111,6 +112,7 @@ HAL_StatusTypeDef altimeter_init(I2C_HandleTypeDef *hi2c) {
 		return status;
 	}
 
+	altimeter_hi2c = hi2c;
 	altimeter_initialized = true;
 
 	return status;
@@ -121,9 +123,9 @@ HAL_StatusTypeDef altimeter_init(I2C_HandleTypeDef *hi2c) {
 /* Note:
  * The MS5611 sensor is rated for a minimum extended pressure range of 10 mbar.
  * Therefore, altitude can only be measured up to the stratosphere below 32km. */
-float read_altimeter(I2C_HandleTypeDef *hi2c) {
+float read_altimeter(void) {
 
-	if (!altimeter_initialized || hi2c == NULL) {
+	if (!altimeter_initialized || altimeter_hi2c == NULL) {
 		return NAN;
 	}
 
@@ -133,13 +135,13 @@ float read_altimeter(I2C_HandleTypeDef *hi2c) {
 	uint32_t D2;	//digital temperature value
 
 	//get raw digital pressure value
-	HAL_StatusTypeDef status = ms5611_read_adc(hi2c, MS5611_ADDRESS, MS5611_D1, &D1);
+	HAL_StatusTypeDef status = ms5611_read_adc(altimeter_hi2c, MS5611_ADDRESS, MS5611_D1, &D1);
 	if (status != HAL_OK) {
 		return NAN;
 	}
 
 	//get raw digital temperature value
-	status = ms5611_read_adc(hi2c, MS5611_ADDRESS, MS5611_D2, &D2);
+	status = ms5611_read_adc(altimeter_hi2c, MS5611_ADDRESS, MS5611_D2, &D2);
 	if (status != HAL_OK) {
 		return NAN;
 	}
