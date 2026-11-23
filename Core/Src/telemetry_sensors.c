@@ -172,17 +172,16 @@ float calculate_altitude(double P) {
 	const double R = 287.05287;	//specific gas constant of 287.05287 J/(kg*K)
 	const double e_radius = 6356766.0;	//Earth's radius of 6,356,766 m
 
-	double P_0 = 1013.25;	//reference sea level pressure
-	double P_1 = 226.32;	//base troposphere pressure
-	double P_2 = 54.749;	//base stratosphere pressure
+	const double P_1 = 226.32;	//base troposphere pressure
+	const double P_2 = 54.749;	//base stratosphere pressure
 
 	//base temperature in degrees Kelvin for given atmospheric layer
-	double T_0 = 288.15;	//troposphere
-	double T = 216.65;		//tropopause and stratosphere
+	//double T_0 = 288.15;	//troposphere
+	const double T = 216.65;		//tropopause and stratosphere
 
 	//temperature differential per meter
-	double L_0 = -0.0065;	//troposphere
-	double L_2 = 0.001;		//stratosphere
+	const double L_0 = -0.0065;	//troposphere
+	const double L_2 = 0.001;		//stratosphere
 
 
 	double h_altitude;	//geopotential altitude handle
@@ -193,6 +192,8 @@ float calculate_altitude(double P) {
 	 * for the given atmospheric layer (based on the given atmospheric pressure)
 	 * and constant reference gravity 'g' */
 	if (P >= P_1) {	//Troposphere
+		const double P_0 = 1013.25;	//reference sea level pressure
+		const double T_0 = 288.15;	//troposphere base temperature
 		h_altitude = (T_0 / L_0) * (pow( (P / P_0), -((R * L_0) / g)) - 1.0);
 	}
 	else if (P >= P_2) { //Tropopause
