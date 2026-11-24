@@ -55,6 +55,13 @@ const osThreadAttr_t defaultTask_attributes = {
   .stack_size = 128 * 4,
   .priority = (osPriority_t) osPriorityNormal,
 };
+/* Definitions for commandHandling */
+osThreadId_t commandHandlingHandle;
+const osThreadAttr_t commandHandling_attributes = {
+  .name = "commandHandling",
+  .stack_size = 512 * 4,
+  .priority = (osPriority_t) osPriorityHigh,
+};
 /* USER CODE BEGIN PV */
 
 /* USER CODE END PV */
@@ -67,6 +74,7 @@ static void MX_DMA_Init(void);
 static void MX_SDMMC1_SD_Init(void);
 static void MX_UART7_Init(void);
 void StartDefaultTask(void *argument);
+void StartCommandHandlingOBC(void *argument);
 
 /* USER CODE BEGIN PFP */
 
@@ -139,6 +147,9 @@ int main(void)
   /* Create the thread(s) */
   /* creation of defaultTask */
   defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
+
+  /* creation of commandHandling */
+  commandHandlingHandle = osThreadNew(StartCommandHandlingOBC, NULL, &commandHandling_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
   xTaskCreate(handle_telemetry,
@@ -453,6 +464,24 @@ void StartDefaultTask(void *argument)
     osDelay(1);
   }
   /* USER CODE END 5 */
+}
+
+/* USER CODE BEGIN Header_StartCommandHandlingOBC */
+/**
+* @brief Function implementing the commandHandling thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_StartCommandHandlingOBC */
+void StartCommandHandlingOBC(void *argument)
+{
+  /* USER CODE BEGIN StartCommandHandlingOBC */
+  /* Infinite loop */
+  for(;;)
+  {
+    osDelay(1);
+  }
+  /* USER CODE END StartCommandHandlingOBC */
 }
 
  /* MPU Configuration */
