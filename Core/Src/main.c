@@ -23,7 +23,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "command_handler.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -158,13 +158,6 @@ int main(void)
           NULL,
           tskIDLE_PRIORITY,
           NULL);
-  xTaskCreate(handle_command,
-            "Handle Command",
-            configMINIMAL_STACK_SIZE,
-            NULL,
-            tskIDLE_PRIORITY,
-            NULL);
-
   /* USER CODE END RTOS_THREADS */
 
   /* USER CODE BEGIN RTOS_EVENTS */
@@ -476,10 +469,11 @@ void StartDefaultTask(void *argument)
 void StartCommandHandlingOBC(void *argument)
 {
   /* USER CODE BEGIN StartCommandHandlingOBC */
+	begin_command_handling(&huart7);
   /* Infinite loop */
   for(;;)
   {
-    osDelay(1);
+	  command_handle();
   }
   /* USER CODE END StartCommandHandlingOBC */
 }
