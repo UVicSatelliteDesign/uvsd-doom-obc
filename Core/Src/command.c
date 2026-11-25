@@ -6,11 +6,11 @@
 #include "main.h"
 #include "FreeRTOS.h"
 #include "task.h"
+#include "command.h"
 #include "command_interface.h"
  
 /* Placeholder poll period. Tune once the TTC link rate and buffering are known. */
 #define COMMAND_POLL_PERIOD_MS 10
- 
 void handle_command(void *vpParameters) {
 	(void)vpParameters;
  
@@ -36,4 +36,16 @@ void handle_command(void *vpParameters) {
 		/* Yield so lower priority tasks get CPU time */
 		vTaskDelay(pdMS_TO_TICKS(COMMAND_POLL_PERIOD_MS));
 	}
+}
+
+CommandStatus_t send_command_to_payload(const doom_command_t *command) {
+	(void)command;
+	/* TODO: Transmit game-input bytes to the payload board. */
+	return CMD_OK;
+}
+
+CommandStatus_t send_command_response_to_ttc(const command_response_t *response) {
+	(void)response;
+	/* TODO: Transmit response bytes to TTC for downlink. */
+	return CMD_OK;
 }
