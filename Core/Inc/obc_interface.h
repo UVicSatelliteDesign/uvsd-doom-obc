@@ -8,6 +8,7 @@
 
 #include "main.h"
 
+void init_burnwire_timers(void);
 uint32_t get_flight_time(void);
 void set_burnwire_pin(void);
 void reset_burnwire_pin(void);

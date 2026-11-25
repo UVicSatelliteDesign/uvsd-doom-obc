@@ -12,8 +12,8 @@
  *   C) Burnwire switched off — by the long timer, or by the short timer once
  *                              the deployment switches release (issue #25)
  *
- * OPEN QUESTION: BURNWIRE_ALTITUDE_LIMIT and BURNWIRE_TIME_LIMIT in
- * burnwire.h are estimates (issue #25); confirm them with the mech team.
+ * BURNWIRE_ALTITUDE_LIMIT and BURNWIRE_TIME_LIMIT in burnwire.h come from the
+ * mech team's balloon selection sheet (15600 m, 65 min at a 4 m/s ascent).
  *
  * burnwire.c is linked against the fakes below instead of obc_interface.c and
  * telemetry_sensors.c. Flight time follows the task.h mock's tick count, so
@@ -182,7 +182,7 @@ void test_predefined_condition_triggers_burnwire(void)
 {
     /* When predefined conditions are met, the burnwire must activate
      * automatically without a command from TTC. */
-    ascent_rate = 10.0f;                      /* reaches the limit at 2310 s */
+    ascent_rate = 10.0f;                      /* reaches the limit at 1560 s */
 
     run_burnwire_task();
 
@@ -195,7 +195,7 @@ void test_burnwire_not_triggered_before_conditions_met(void)
 {
     /* The burnwire must not activate while conditions are below threshold. */
     launch_altitude = 100.0f;
-    ascent_rate     = 5.0f;                   /* 16600 m at the time limit */
+    ascent_rate     = 3.0f;                   /* 11800 m at the time limit */
 
     run_burnwire_task();
 
