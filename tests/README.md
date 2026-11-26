@@ -145,6 +145,18 @@ void setUp(void) { mock_gpio_read_value = GPIO_PIN_RESET; }
 
 Reset mock state in `setUp()` so tests don't affect each other.
 
+## Moving, renaming or deleting firmware files
+
+Each test only links the files in its `SRC_test_<module>` list, so update
+`Makefile` when code changes file:
+
+- **Moved code into a new `.c` file:** add the new file to the list.
+  Otherwise the test fails with `undefined reference to ...`.
+- **Renamed or deleted a file:** update or remove it in the list.
+  Otherwise make stops with `No rule to make target 'build/test_<module>'`.
+
+`grep -n SRC_ tests/Makefile` shows which tests use a file.
+
 ## Coverage
 
 ```bash
