@@ -73,22 +73,6 @@ typedef struct {
 	const uint8_t *data;
 } command_response_t;
 
-/**
- * @brief Forwards a DOOM game command to the payload board.
- * @param command Game input to send. Must not be NULL. command->data may be
- *                NULL only when command->length is 0.
- * @return CMD_OK on success, or a CommandStatus_t error code.
- */
-CommandStatus_t send_command_to_payload(const doom_command_t *command);
-
-/**
- * @brief Forwards a command response to TTC for transmission to the ground.
- * @param response Reply to send. Must not be NULL. response->data may be
- *                 NULL only when response->length is 0.
- * @return CMD_OK on success, or a CommandStatus_t error code.
- */
-CommandStatus_t send_command_response_to_ttc(const command_response_t *response);
-
 #ifdef __cplusplus
 }
 #endif
