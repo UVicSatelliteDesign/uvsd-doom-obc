@@ -26,7 +26,7 @@ void handle_command(void *vpParameters) {
  
 			if (command_is_doom(&cmd)) {
 				/* DOOM command: the payload handles it, the OBC only forwards it */
-				payload_forward_command(&cmd);
+				send_command_to_payload(&cmd);
 			} else {
 				/* OBC command (e.g. send telemetry): the OBC executes it */
 				obc_execute_command(&cmd);
@@ -36,16 +36,4 @@ void handle_command(void *vpParameters) {
 		/* Yield so lower priority tasks get CPU time */
 		vTaskDelay(pdMS_TO_TICKS(COMMAND_POLL_PERIOD_MS));
 	}
-}
-
-CommandStatus_t send_command_to_payload(const doom_command_t *command) {
-	(void)command;
-	/* TODO: Transmit game-input bytes to the payload board. */
-	return CMD_OK;
-}
-
-CommandStatus_t send_command_response_to_ttc(const command_response_t *response) {
-	(void)response;
-	/* TODO: Transmit response bytes to TTC for downlink. */
-	return CMD_OK;
 }
