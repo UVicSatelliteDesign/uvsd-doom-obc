@@ -7,20 +7,27 @@
 
 #include "command_handler.h"
 #include "cmsis_os2.h"
+#include <string.h>		// Used for memcpy.
 
 #define TTC_UART_PERIPHERAL UART7
-#define MAXIMUM_COMMAND_LENGTH_BYTES 237
-#define RX_EVENT_FLAG 0x01
-#define RX_BUFFER_NUMBER_OF_ELEMENTS (sizeof(ring_buffer_Rx) / sizeof(ring_buffer_Rx[0]))
+#define MAXIMUM_PACKET_LENGTH_BYTES 237
+#define RX_BUFFER_LENGTH_BYTES (MAXIMUM_PACKET_LENGTH_BYTES * 4)	// Number of packets chosen experimentally.
+#define PACKET_QUEUE_DEPTH 6										// Number of messages chosen experimentally.
 
-static osThreadId_t command_handle_task;
-static uint8_t ring_buffer_Rx[MAXIMUM_COMMAND_LENGTH_BYTES * 3];
-static volatile uint16_t rx_buffer_head;	// Controlled by ISR, see below RxEventCallback.
-static uint16_t rx_buffer_tail;				// Controlled by task.
+typedef struct{
+	uint16_t offset;
+	uint8_t length_of_packet;
+} packet_message_t;
+
+static uint8_t ring_buffer_Rx[RX_BUFFER_LENGTH_BYTES];
+static volatile uint16_t last_packet_end_index = 0;
+static osMessageQueueId_t packet_queue_Rx;
 
 void begin_command_handling(UART_HandleTypeDef* huart){
-	command_handle_task = osThreadGetId();
-	HAL_UARTEx_ReceiveToIdle_DMA(huart, ring_buffer_Rx, RX_BUFFER_NUMBER_OF_ELEMENTS);
+	packet_queue_Rx = osMessageQueueNew(PACKET_QUEUE_DEPTH, sizeof(packet_message_t), NULL);
+	last_packet_end_index = 0;
+	HAL_UARTEx_ReceiveToIdle_DMA(huart, ring_buffer_Rx, RX_BUFFER_LENGTH_BYTES);
+	__HAL_DMA_DISABLE_IT(huart -> hdmarx, DMA_IT_HT);
 }
 
 /*
@@ -30,8 +37,25 @@ void begin_command_handling(UART_HandleTypeDef* huart){
 void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size){
 	if (huart -> Instance == TTC_UART_PERIPHERAL){
 		if (HAL_UARTEx_GetRxEventType(huart) == HAL_UART_RXEVENT_IDLE){
-			rx_buffer_head = Size % RX_BUFFER_NUMBER_OF_ELEMENTS;
-			osThreadFlagsSet(command_handle_task, RX_EVENT_FLAG);	// Contains portYIELD_FROM_ISR() within.
+			uint16_t calculated_packet_length = 0;		// Uses uint16_t to avoid integer overflow in case no idle line.
+			if (Size >= last_packet_end_index){
+				calculated_packet_length = Size - 1 * last_packet_end_index;
+			}
+			else{
+				// DMA had wrapped around within the ring buffer.
+				calculated_packet_length = RX_BUFFER_LENGTH_BYTES - 1 * last_packet_end_index + Size;
+			}
+
+			if (calculated_packet_length > 0 && calculated_packet_length <= MAXIMUM_PACKET_LENGTH_BYTES){
+				packet_message_t message = {
+						.offset = last_packet_end_index,
+						.length_of_packet = calculated_packet_length
+				};
+
+				osMessageQueuePut(packet_queue_Rx, &message, 0, 0);
+
+			last_packet_end_index = Size;	// Advance even if the message is not queued, packet is ignored.
+			}
 		}
 	}
 }
@@ -39,7 +63,7 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size){
 /*
  * @brief: The command interpretation logic.
  */
-static void command_interpret(uint8_t* command_array){
+static void command_interpret(const uint8_t* command_array){
 	// ToDo: Implement command interpretation.
 
 	uint8_t opcode = command_array[4];
@@ -59,19 +83,23 @@ static void command_interpret(uint8_t* command_array){
 }
 
 void command_handle(void){
-	osThreadFlagsWait(RX_EVENT_FLAG, osFlagsWaitAny, osWaitForever);	// Clears the flag by default after receiving.
-	uint8_t data_byte;
-	uint8_t index = 0;
-	uint8_t command[MAXIMUM_COMMAND_LENGTH_BYTES];
+	packet_message_t message;
+	uint8_t command[MAXIMUM_PACKET_LENGTH_BYTES];
 
-	// ToDo: We need a way to check whether we are about to read more than one packet.
-	while (rx_buffer_tail != rx_buffer_head){
-		data_byte = ring_buffer_Rx[rx_buffer_tail];
-		rx_buffer_tail = (rx_buffer_tail + 1) % RX_BUFFER_NUMBER_OF_ELEMENTS;
-		command[index++] = data_byte;
+	if (osMessageQueueGet(packet_queue_Rx, &message, NULL, osWaitForever) == osOK){
+		if (message.offset + message.length_of_packet <= RX_BUFFER_LENGTH_BYTES){
+			memcpy(command, &ring_buffer_Rx[message.offset], message.length_of_packet);
+		}
+		else{
+			// DMA had wrapped around within the ring buffer.
+			uint16_t partial_packet_length = RX_BUFFER_LENGTH_BYTES - 1 * message.offset;
+			memcpy(command, &ring_buffer_Rx[message.offset], partial_packet_length);
+			memcpy(&command[partial_packet_length], ring_buffer_Rx,
+					message.length_of_packet - 1 * partial_packet_length);
+		}
+
+		command_interpret(command);
 	}
-
-	command_interpret(command);
 }
 
 /*
@@ -81,11 +109,11 @@ void command_handle(void){
 void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart){
 	// ToDo: Make the error handling more elegant.
 	if (huart -> Instance == TTC_UART_PERIPHERAL){
-		rx_buffer_head = 0;
-		rx_buffer_tail = 0;
+		last_packet_end_index = 0;
+		osMessageQueueReset(packet_queue_Rx);	// Unsure whether this works within ISR.
 
-		// if there is a problem with UART itself, this will create an undesirable loop of interrupts.
-		HAL_UARTEx_ReceiveToIdle_DMA(huart, ring_buffer_Rx, RX_BUFFER_NUMBER_OF_ELEMENTS);
+		// If there is a problem with UART itself, this will create an undesirable loop of interrupts.
+		HAL_UARTEx_ReceiveToIdle_DMA(huart, ring_buffer_Rx, RX_BUFFER_LENGTH_BYTES);
 	}
 }
 
